@@ -148,7 +148,7 @@
   </div>
 </div>
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbydFBPW-R9L_9Ic4W1gaNvH2RLLiptT5p1aTKgfT8W4AbB2Z828ZOh0iImi-fAZ2AXz_g/exec";
+  const DB_ROOT = "https://script.google.com/macros/s/AKfycbydFBPW-R9L_9Ic4W1gaNvH2RLLiptT5p1aTKgfT8W4AbB2Z828ZOh0iImi-fAZ2AXz_g/exec";
   let globalTrades = [], lastMarketData = null, settingsLoaded = false;
 
   function switchTab(idx) {
@@ -164,7 +164,7 @@
     if (mode === "all") { box.style.visibility = "hidden"; }
     else {
       box.style.visibility = "visible";
-      lbl.innerText = mode === "fixed" ? "مبلغ ثابت دلاری ($)" : "درصد از موجودی (%)";
+      lbl.innerText = mode === "fixed" ? "\u0645\u0628\u0644\u063a \u062b\u0627\u0628\u062a ($)" : "\u062f\u0631\u0635\u062f \u0633\u0631\u0645\u0627\u06cc\u0647 (%)";
     }
   }
 
@@ -181,7 +181,7 @@
     document.getElementById("vault_percent").value = 10;
     document.getElementById("risk").value = 2;
     toggleAllocInput();
-    alert("🔄 مقادیر فرم به حالت استاندارد برگشت. برای اعمال نهایی روی دکمه ذخیره کلیک کنید.");
+    alert("Reset to Standard Defaults. Click Save to apply.");
   }
 
   function updateMarket(d) {
@@ -195,11 +195,11 @@
     document.getElementById("vault-bal").innerText = (d.vault_balance || 0) + " $";
     document.getElementById("sup").innerText = (d.supports || []).join(" | ");
     document.getElementById("res").innerText = (d.resistances || []).join(" | ");
-    document.getElementById("btc-tr").innerText = d.trend === "BULLISH" ? "🟢" : "🔴";
-    document.getElementById("gold-tr").innerText = d.gold_trend === "BULLISH" ? "🟢" : "🔴";
+    document.getElementById("btc-tr").innerText = d.trend === "BULLISH" ? "\uD83D\uDFE2" : "\uD83D\uDD34";
+    document.getElementById("gold-tr").innerText = d.gold_trend === "BULLISH" ? "\uD83D\uDFE2" : "\uD83D\uDD34";
     const trBox = document.getElementById("trend-box");
-    if (d.trend === "BULLISH") { trBox.innerText = "صعودی 🟢"; trBox.style.color = "#4ade80"; }
-    else if (d.trend === "BEARISH") { trBox.innerText = "نزولی 🔴"; trBox.style.color = "#f87171"; }
+    if (d.trend === "BULLISH") { trBox.innerText = "\u0635\u0639\u0648\u062f\u06cc \uD83D\uDFE2"; trBox.style.color = "#4ade80"; }
+    else if (d.trend === "BEARISH") { trBox.innerText = "\u0646\u0632\u0648\u0644\u06cc \uD83D\uDD34"; trBox.style.color = "#f87171"; }
     document.getElementById("ema-box").innerText = "EMA(" + (d.ema_period || 200) + "): " + (d.ema_val || "---");
     document.getElementById("rsi-box").innerText = "RSI(" + (d.rsi_period || 14) + "): " + (d.rsi_val || "---");
     if (document.getElementById("tab-1").classList.contains("active")) redrawChart();
@@ -297,33 +297,34 @@
     const pos = all.open_position, posDiv = document.getElementById("open-pos-body");
     if (pos && pos.status === "OPEN") {
       const pnlClass = pos.unrealized_pnl >= 0 ? "pos-green" : "neg-red", pnlSign = pos.unrealized_pnl >= 0 ? "+" : "";
-      posDiv.innerHTML = "<div style='display:flex; justify-content:space-between; margin-bottom:8px;'><span>" + pos.symbol + " (" + pos.side + " " + pos.leverage + "x)</span><span class='" + pnlClass + "'>" + pnlSign + pos.unrealized_pnl + " $</span></div><div class='grid-2'><div class='box'>ورود: " + pos.entry_price + "</div><div class='box'>سرمایه: " + pos.margin + " $</div><div class='box'>حد سود: " + pos.tp + "</div><div class='box'>حد ضرر: " + pos.sl + "</div></div>";
-    } else { posDiv.innerHTML = "در حال حاضر معامله بازی وجود ندارد."; }
+      posDiv.innerHTML = "<div style='display:flex; justify-content:space-between; margin-bottom:8px;'><span>" + pos.symbol + " (" + pos.side + " " + pos.leverage + "x)</span><span class='" + pnlClass + "'>" + pnlSign + pos.unrealized_pnl + " $</span></div><div class='grid-2'><div class='box'>Entry: " + pos.entry_price + "</div><div class='box'>Margin: " + pos.margin + " $</div><div class='box'>TP: " + pos.tp + "</div><div class='box'>SL: " + pos.sl + "</div></div>";
+    } else { posDiv.innerHTML = "No open position."; }
     if (all.trade_history) {
       globalTrades = Object.values(all.trade_history).reverse();
-      document.getElementById("trades-body").innerHTML = globalTrades.map(t => { const isWin = t.pnl >= 0; return "<tr><td>" + t.time + "</td><td>" + (t.symbol || "BTC") + "</td><td>" + (t.side === "LONG" ? "🟢 خرید" : "🔴 فروش") + "</td><td>" + t.invested + "</td><td class='" + (isWin ? "pos-green" : "neg-red") + "'>" + (isWin ? "+" : "") + t.pnl + "</td><td style='color:#fbbf24;'>" + (t.vault_saved || 0) + "</td><td><b>" + t.balance_after + "</b></td></tr>"; }).join("");
+      document.getElementById("trades-body").innerHTML = globalTrades.map(t => { const isWin = t.pnl >= 0; return "<tr><td>" + t.time + "</td><td>" + (t.symbol || "BTC") + "</td><td>" + t.side + "</td><td>" + t.invested + "</td><td class='" + (isWin ? "pos-green" : "neg-red") + "'>" + (isWin ? "+" : "") + t.pnl + "</td><td style='color:#fbbf24;'>" + (t.vault_saved || 0) + "</td><td><b>" + t.balance_after + "</b></td></tr>"; }).join("");
     }
     if (all.missed_signals) {
       const mList = Object.values(all.missed_signals).reverse();
-      document.getElementById("missed-body").innerHTML = mList.map(m => { let badge = m.outcome === "SUCCESS" ? "<span class='pos-green'>✅ موفق</span>" : (m.outcome === "FAILED" ? "<span class='neg-red'>❌ ناموفق</span>" : "⏳ در جریان"); return "<tr><td>" + m.time + "</td><td>" + m.symbol + "</td><td>" + m.side + "</td><td style='direction:ltr;'>" + m.entry + "/" + m.sl + "/" + m.tp + "</td><td>" + badge + "</td></tr>"; }).join("");
+      document.getElementById("missed-body").innerHTML = mList.map(m => { let badge = m.outcome === "SUCCESS" ? "<span class='pos-green'>WIN</span>" : (m.outcome === "FAILED" ? "<span class='neg-red'>LOSS</span>" : "PENDING"); return "<tr><td>" + m.time + "</td><td>" + m.symbol + "</td><td>" + m.side + "</td><td style='direction:ltr;'>" + m.entry + "/" + m.sl + "/" + m.tp + "</td><td>" + badge + "</td></tr>"; }).join("");
     }
   }
 
   function exportExcel() {
-    if (!globalTrades.length) { alert("داده‌ای برای خروجی وجود ندارد."); return; }
-    let csv = "\uFEFFتاریخ,نماد,جهت,سرمایه($),سود و زیان($),ذخیره صندوق($),کارمزد($),موجودی نهایی($),وضعیت\n";
-    globalTrades.forEach(t => { csv += t.time + "," + (t.symbol || "BTC") + "," + t.side + "," + t.invested + "," + t.pnl + "," + (t.vault_saved || 0) + "," + t.fee + "," + t.balance_after + "," + (t.pnl >= 0 ? "موفق" : "ناموفق") + "\n"; });
-    const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" })); link.download = "Crypto_Gold_Trades_Report.csv"; link.click();
+    if (!globalTrades.length) { alert("No trades to export."); return; }
+    let csv = "Time,Symbol,Side,Invested($),PnL($),VaultSaved($),Fee($),BalanceAfter($)\n";
+    globalTrades.forEach(t => { csv += t.time + "," + (t.symbol || "BTC") + "," + t.side + "," + t.invested + "," + t.pnl + "," + (t.vault_saved || 0) + "," + t.fee + "," + t.balance_after + "\n"; });
+    const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" })); link.download = "Crypto_Gold_Report.csv"; link.click();
   }
 
   async function save() {
     const data = { symbol: document.getElementById("symbol").value, timeframe: document.getElementById("timeframe").value, leverage: Number(document.getElementById("leverage").value), ema_period: Number(document.getElementById("ema_period").value), rsi_period: Number(document.getElementById("rsi_period").value), alloc_mode: document.getElementById("alloc_mode").value, alloc_value: Number(document.getElementById("alloc_value").value), vault_enabled: document.getElementById("vault_enabled").value === "true", base_capital: Number(document.getElementById("base_capital").value), vault_percent: Number(document.getElementById("vault_percent").value), risk_percent: Number(document.getElementById("risk").value), auto_trade: document.getElementById("auto").value === "true", api_key: document.getElementById("api_key").value.trim(), api_secret: document.getElementById("api_secret").value.trim() };
-await fetch(API_URL, { method: "POST", body: JSON.stringify(data) });
-alert("✅ تنظیمات جدید در سرور ذخیره شد");
-}
-async function syncAll() {
-try {
-const res = await fetch(API_URL + "?path=all");
+    await fetch(DB_ROOT + "/settings.json", { method: "PATCH", body: JSON.stringify(data) });
+    alert("Settings Saved Successfully!");
+  }
+
+  async function syncAll() {
+    try {
+const res = await fetch(DB_ROOT + "/.json");
 const all = await res.json();
 if (!all) return;
 const wBal = all.live_market ? all.live_market.wallet_balance : 0;
@@ -334,3 +335,6 @@ updateExtraTabs(all);
 }
 syncAll();
 setInterval(syncAll, 5000);
+</script>
+</body>
+</html>
