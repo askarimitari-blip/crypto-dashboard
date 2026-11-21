@@ -96,7 +96,13 @@
         <div id="alloc-val-box"><label id="alloc-val-label">مقدار درصد سرمایه (%)</label><input id="alloc_value" class="ltr" type="number" value="10"></div>
       </div>
       <div class="grid-3">
-        <div><label>صندوق ذخیره سود</label><select id="vault_enabled"><option value="true" selected>فعال (ذخیره سود)</option><option value="false">غیرفعال (مرکب)</option></select></div>
+        <div>
+          <label>صندوق ذخیره سود</label>
+          <select id="vault_enabled" onchange="toggleVaultInputs()">
+            <option value="true" selected>فعال (ذخیره سود)</option>
+            <option value="false">غیرفعال (مرکب)</option>
+          </select>
+        </div>
         <div><label>سرمایه پایه صندوق ($)</label><input id="base_capital" class="ltr" type="number" value="1000"></div>
         <div><label>درصد سود به صندوق (%)</label><input id="vault_percent" class="ltr" type="number" value="10" min="1" max="90"></div>
       </div>
@@ -112,7 +118,13 @@
   </div>
   <div class="tab-content" id="tab-1">
     <div class="card">
-      <h4 style="margin:0 0 10px 0; color:#38bdf8;">📈 نمودار کندلی قیمت، اندیکاتورها و خطوط حمایت/مقاومت</h4>
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+        <h4 style="margin:0; color:#38bdf8;">📈 نمودار کندلی قیمت و اندیکاتورها</h4>
+        <div style="display:flex; gap:6px;">
+          <button type="button" id="btn-chart-btc" class="tab-btn active" style="padding:6px 12px;" onclick="setChartAsset('BTC')">₿ بیت‌کوین (BTC)</button>
+          <button type="button" id="btn-chart-gold" class="tab-btn" style="padding:6px 12px;" onclick="setChartAsset('GOLD')">🪙 طلای جهانی (XAU)</button>
+        </div>
+      </div>
       <div class="chart-toggles">
         <label><input type="checkbox" id="chk-ema" checked onchange="redrawChart()"> خط EMA (نارنجی)</label>
         <label><input type="checkbox" id="chk-sup" checked onchange="redrawChart()"> خطوط حمایت (سبز)</label>
@@ -150,11 +162,20 @@
 <script>
   const DB_ROOT = "https://" + "mycryptoassistant-29926" + "-default-rtdb." + "firebaseio" + ".com";
   let globalTrades = [], lastMarketData = null, settingsLoaded = false;
+  let activeChartAsset = "BTC", userPickedChart = false;
 
   function switchTab(idx) {
-    document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+    document.querySelectorAll('.tabs .tab-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
     document.querySelectorAll('.tab-content').forEach((c, i) => c.classList.toggle('active', i === idx));
     if (idx === 1 && lastMarketData) setTimeout(redrawChart, 50);
+  }
+
+  function setChartAsset(asset) {
+    activeChartAsset = asset;
+    userPickedChart = true;
+    document.getElementById("btn-chart-btc").classList.toggle("active", asset === "BTC");
+    document.getElementById("btn-chart-gold").classList.toggle("active", asset === "GOLD");
+    redrawChart();
   }
 
   function toggleAllocInput() {
@@ -164,8 +185,18 @@
     if (mode === "all") { box.style.visibility = "hidden"; }
     else {
       box.style.visibility = "visible";
-      lbl.innerText = mode === "fixed" ? "\u0645\u0628\u0644\u063a \u062b\u0627\u0628\u062a ($)" : "\u062f\u0631\u0635\u062f \u0633\u0631\u0645\u0627\u06cc\u0647 (%)";
+      lbl.innerText = mode === "fixed" ? "Fixed Amount ($)" : "Capital Percent (%)";
     }
+  }
+
+  function toggleVaultInputs() {
+    const isEnabled = document.getElementById("vault_enabled").value === "true";
+    const baseInp = document.getElementById("base_capital");
+    const pctInp = document.getElementById("vault_percent");
+    baseInp.disabled = !isEnabled;
+    pctInp.disabled = !isEnabled;
+    baseInp.style.opacity = isEnabled ? "1" : "0.4";
+    pctInp.style.opacity = isEnabled ? "1" : "0.4";
   }
 
   function resetDefaults() {
@@ -181,6 +212,7 @@
     document.getElementById("vault_percent").value = 10;
     document.getElementById("risk").value = 2;
     toggleAllocInput();
+    toggleVaultInputs();
     alert("Reset to Standard Defaults. Click Save to apply.");
   }
 
@@ -195,18 +227,23 @@
     document.getElementById("vault-bal").innerText = (d.vault_balance || 0) + " $";
     document.getElementById("sup").innerText = (d.supports || []).join(" | ");
     document.getElementById("res").innerText = (d.resistances || []).join(" | ");
-    document.getElementById("btc-tr").innerText = d.trend === "BULLISH" ? "\uD83D\uDFE2" : "\uD83D\uDD34";
-    document.getElementById("gold-tr").innerText = d.gold_trend === "BULLISH" ? "\uD83D\uDFE2" : "\uD83D\uDD34";
+    document.getElementById("btc-tr").innerText = d.trend === "BULLISH" ? "UP" : "DOWN";
+    document.getElementById("gold-tr").innerText = d.gold_trend === "BULLISH" ? "UP" : "DOWN";
     const trBox = document.getElementById("trend-box");
-    if (d.trend === "BULLISH") { trBox.innerText = "\u0635\u0639\u0648\u062f\u06cc \uD83D\uDFE2"; trBox.style.color = "#4ade80"; }
-    else if (d.trend === "BEARISH") { trBox.innerText = "\u0646\u0632\u0648\u0644\u06cc \uD83D\uDD34"; trBox.style.color = "#f87171"; }
+    if (d.trend === "BULLISH") { trBox.innerText = "BULLISH"; trBox.style.color = "#4ade80"; }
+    else if (d.trend === "BEARISH") { trBox.innerText = "BEARISH"; trBox.style.color = "#f87171"; }
     document.getElementById("ema-box").innerText = "EMA(" + (d.ema_period || 200) + "): " + (d.ema_val || "---");
     document.getElementById("rsi-box").innerText = "RSI(" + (d.rsi_period || 14) + "): " + (d.rsi_val || "---");
     if (document.getElementById("tab-1").classList.contains("active")) redrawChart();
   }
   function redrawChart() {
-    if (!lastMarketData || !lastMarketData.chart || !lastMarketData.chart.closes) return;
-    const c = lastMarketData.chart;
+    if (!lastMarketData) return;
+    const isGold = activeChartAsset === "GOLD";
+    const c = (isGold && lastMarketData.gold_chart) ? lastMarketData.gold_chart : lastMarketData.chart;
+    if (!c || !c.closes) return;
+    const supsList = isGold ? (lastMarketData.gold_supports || []) : (lastMarketData.supports || []);
+    const ressList = isGold ? (lastMarketData.gold_resistances || []) : (lastMarketData.resistances || []);
+    const activeP = isGold ? lastMarketData.gold_price : lastMarketData.current_price;
     const showEma = document.getElementById("chk-ema").checked, showSup = document.getElementById("chk-sup").checked, showRes = document.getElementById("chk-res").checked, showRsi = document.getElementById("chk-rsi").checked;
     const canvas = document.getElementById("priceChart"), ctx = canvas.getContext("2d");
     const W = canvas.width = Math.max(300, canvas.parentElement.clientWidth - 20), H = canvas.height = 330;
@@ -216,58 +253,36 @@
     const highs = c.highs || c.closes, lows = c.lows || c.closes, opens = c.opens || c.closes;
     let allVals = highs.concat(lows);
     if (showEma && c.ema) allVals = allVals.concat(c.ema);
-    if (showSup && lastMarketData.supports) allVals = allVals.concat(lastMarketData.supports);
-    if (showRes && lastMarketData.resistances) allVals = allVals.concat(lastMarketData.resistances);
+    if (showSup && supsList.length) allVals = allVals.concat(supsList);
+    if (showRes && ressList.length) allVals = allVals.concat(ressList);
 
     const maxP = Math.max.apply(null, allVals), minP = Math.min.apply(null, allVals), rangeP = (maxP - minP) || 1;
     const toY = p => padT + plotH - ((p - minP) / rangeP) * plotH;
-
     ctx.strokeStyle = "#334155"; ctx.fillStyle = "#94a3b8"; ctx.font = "11px Tahoma"; ctx.lineWidth = 0.5;
-    for (let g = 0; g <= 5; g++) {
-      const pVal = minP + (rangeP * g / 5), y = toY(pVal);
-      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
-      ctx.fillText(pVal.toFixed(1), W - padR + 6, y + 4);
-    }
-    if (showSup && lastMarketData.supports) lastMarketData.supports.forEach(s => { const y = toY(s); ctx.strokeStyle = "#4ade80"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke(); });
-    if (showRes && lastMarketData.resistances) lastMarketData.resistances.forEach(r => { const y = toY(r); ctx.strokeStyle = "#f87171"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke(); });
+    for (let g = 0; g <= 5; g++) { const pVal = minP + (rangeP * g / 5), y = toY(pVal); ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke(); ctx.fillText(pVal.toFixed(1), W - padR + 6, y + 4); }
+    if (showSup) supsList.forEach(s => { const y = toY(s); ctx.strokeStyle = "#4ade80"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke(); });
+    if (showRes) ressList.forEach(r => { const y = toY(r); ctx.strokeStyle = "#f87171"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke(); });
 
     ctx.strokeStyle = "#475569"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, H - padB); ctx.lineTo(W - padR, H - padB); ctx.stroke();
     const n = c.closes.length, step = plotW / n, candleW = Math.max(3, step * 0.65), tf = lastMarketData.timeframe || "4h", tickInterval = Math.max(1, Math.floor(n / 6));
-
     for (let i = 0; i < n; i++) {
       const x = padL + i * step + step / 2, yO = toY(opens[i]), yC = toY(c.closes[i]), yH = toY(highs[i]), yL = toY(lows[i]), isUp = c.closes[i] >= opens[i];
       ctx.strokeStyle = isUp ? "#4ade80" : "#f87171"; ctx.fillStyle = isUp ? "#4ade80" : "#f87171"; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(x, yH); ctx.lineTo(x, yL); ctx.stroke();
       ctx.fillRect(x - candleW / 2, Math.min(yO, yC), candleW, Math.max(1.5, Math.abs(yC - yO)));
       ctx.strokeStyle = "#475569"; ctx.beginPath(); ctx.moveTo(x, H - padB); ctx.lineTo(x, H - padB + (i % tickInterval === 0 ? 7 : 3)); ctx.stroke();
-      if (i % tickInterval === 0 && c.times && c.times[i]) {
-        ctx.fillStyle = "#94a3b8"; ctx.font = "10px Tahoma";
-        const parts = c.times[i].split(" ");
-        ctx.fillText((tf === "1d" || tf === "4h") ? c.times[i] : parts[parts.length - 1], x - 20, H - 8);
-      }
+      if (i % tickInterval === 0 && c.times && c.times[i]) { ctx.fillStyle = "#94a3b8"; ctx.font = "10px Tahoma"; const parts = c.times[i].split(" "); ctx.fillText((tf === "1d" || tf === "4h") ? c.times[i] : parts[parts.length - 1], x - 20, H - 8); }
     }
-    if (showEma && c.ema) {
-      ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 1.8; ctx.beginPath();
-      c.ema.forEach((val, i) => { const x = padL + i * step + step / 2, y = toY(val); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); });
-      ctx.stroke();
-    }
-    const activeP = (lastMarketData.symbol && (lastMarketData.symbol.includes("PAXG") || lastMarketData.symbol.includes("XAU"))) ? lastMarketData.gold_price : lastMarketData.current_price;
-    const curY = toY(activeP);
-    ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, curY); ctx.lineTo(W - padR, curY); ctx.stroke();
-    ctx.fillStyle = "#0284c7"; ctx.fillRect(W - padR + 2, curY - 9, 72, 18);
-    ctx.fillStyle = "#ffffff"; ctx.fillText(activeP, W - padR + 6, curY + 4);
+    if (showEma && c.ema) { ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 1.8; ctx.beginPath(); c.ema.forEach((val, i) => { const x = padL + i * step + step / 2, y = toY(val); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }); ctx.stroke(); }
+    const curY = toY(activeP); ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, curY); ctx.lineTo(W - padR, curY); ctx.stroke();
+    ctx.fillStyle = "#0284c7"; ctx.fillRect(W - padR + 2, curY - 9, 72, 18); ctx.fillStyle = "#ffffff"; ctx.fillText(activeP, W - padR + 6, curY + 4);
 
-    const rsiDiv = document.getElementById("rsi-container");
-    rsiDiv.style.display = showRsi ? "block" : "none";
+    const rsiDiv = document.getElementById("rsi-container"); rsiDiv.style.display = showRsi ? "block" : "none";
     if (showRsi && c.rsi) {
-      const rCanvas = document.getElementById("rsiChart"), rCtx = rCanvas.getContext("2d");
-      rCanvas.width = W; rCanvas.height = 95; rCtx.clearRect(0, 0, W, 95); rCtx.textAlign = "left";
-      const toRY = v => 10 + 75 - (v / 100) * 75;
-      rCtx.strokeStyle = "#334155"; rCtx.lineWidth = 0.5;
+      const rCanvas = document.getElementById("rsiChart"), rCtx = rCanvas.getContext("2d"); rCanvas.width = W; rCanvas.height = 95; rCtx.clearRect(0, 0, W, 95); rCtx.textAlign = "left";
+      const toRY = v => 10 + 75 - (v / 100) * 75; rCtx.strokeStyle = "#334155"; rCtx.lineWidth = 0.5;
       new Array(30, 70).forEach(lvl => { const y = toRY(lvl); rCtx.beginPath(); rCtx.moveTo(padL, y); rCtx.lineTo(W - padR, y); rCtx.stroke(); rCtx.fillStyle = "#94a3b8"; rCtx.fillText(lvl, W - padR + 6, y + 4); });
-      rCtx.strokeStyle = "#a855f7"; rCtx.lineWidth = 1.5; rCtx.beginPath();
-      c.rsi.forEach((v, i) => { const x = padL + i * step + step / 2, y = toRY(v); if (i === 0) rCtx.moveTo(x, y); else rCtx.lineTo(x, y); });
-      rCtx.stroke();
+      rCtx.strokeStyle = "#a855f7"; rCtx.lineWidth = 1.5; rCtx.beginPath(); c.rsi.forEach((v, i) => { const x = padL + i * step + step / 2, y = toRY(v); if (i === 0) rCtx.moveTo(x, y); else rCtx.lineTo(x, y); }); rCtx.stroke();
     }
   }
 
@@ -275,21 +290,17 @@
     if (!s || settingsLoaded) return;
     if (s.symbol) document.getElementById("symbol").value = s.symbol;
     if (s.timeframe) document.getElementById("timeframe").value = s.timeframe;
-    document.getElementById("leverage").value = s.leverage || 3;
-    document.getElementById("ema_period").value = s.ema_period || 200;
-    document.getElementById("rsi_period").value = s.rsi_period || 14;
+    document.getElementById("leverage").value = s.leverage || 3; document.getElementById("ema_period").value = s.ema_period || 200; document.getElementById("rsi_period").value = s.rsi_period || 14;
     if (s.alloc_mode) document.getElementById("alloc_mode").value = s.alloc_mode;
     if (s.alloc_value) document.getElementById("alloc_value").value = s.alloc_value;
     document.getElementById("vault_enabled").value = String(s.vault_enabled !== false);
     const defaultBase = (walletBal && walletBal > 0) ? Math.min(1000, walletBal) : 1000;
-    document.getElementById("base_capital").value = s.base_capital || defaultBase;
-    document.getElementById("vault_percent").value = s.vault_percent || 10;
+    document.getElementById("base_capital").value = s.base_capital || defaultBase; document.getElementById("vault_percent").value = s.vault_percent || 10;
     if (s.risk_percent) document.getElementById("risk").value = s.risk_percent;
     document.getElementById("auto").value = String(s.auto_trade || false);
     if (s.api_key) document.getElementById("api_key").value = s.api_key;
     if (s.api_secret) document.getElementById("api_secret").value = s.api_secret;
-    toggleAllocInput();
-    settingsLoaded = true;
+    toggleAllocInput(); toggleVaultInputs(); settingsLoaded = true;
   }
 
   function updateExtraTabs(all) {
@@ -298,15 +309,13 @@
     if (pos && pos.status === "OPEN") {
       const pnlClass = pos.unrealized_pnl >= 0 ? "pos-green" : "neg-red", pnlSign = pos.unrealized_pnl >= 0 ? "+" : "";
       posDiv.innerHTML = "<div style='display:flex; justify-content:space-between; margin-bottom:8px;'><span>" + pos.symbol + " (" + pos.side + " " + pos.leverage + "x)</span><span class='" + pnlClass + "'>" + pnlSign + pos.unrealized_pnl + " $</span></div><div class='grid-2'><div class='box'>Entry: " + pos.entry_price + "</div><div class='box'>Margin: " + pos.margin + " $</div><div class='box'>TP: " + pos.tp + "</div><div class='box'>SL: " + pos.sl + "</div></div>";
-    } else { posDiv.innerHTML = "No open position."; }
-    if (all.trade_history) {
-      globalTrades = Object.values(all.trade_history).reverse();
-      document.getElementById("trades-body").innerHTML = globalTrades.map(t => { const isWin = t.pnl >= 0; return "<tr><td>" + t.time + "</td><td>" + (t.symbol || "BTC") + "</td><td>" + t.side + "</td><td>" + t.invested + "</td><td class='" + (isWin ? "pos-green" : "neg-red") + "'>" + (isWin ? "+" : "") + t.pnl + "</td><td style='color:#fbbf24;'>" + (t.vault_saved || 0) + "</td><td><b>" + t.balance_after + "</b></td></tr>"; }).join("");
+      if (!userPickedChart) { const a = (pos.symbol.includes("PAXG") || pos.symbol.includes("XAU")) ? "GOLD" : "BTC"; activeChartAsset = a; document.getElementById("btn-chart-btc").classList.toggle("active", a === "BTC"); document.getElementById("btn-chart-gold").classList.toggle("active", a === "GOLD"); }
+    } else {
+      posDiv.innerHTML = "No open position.";
+      if (!userPickedChart && all.live_market && all.live_market.symbol) { const sym = all.live_market.symbol, a = (sym.includes("PAXG") || sym.includes("XAU")) ? "GOLD" : "BTC"; activeChartAsset = a; document.getElementById("btn-chart-btc").classList.toggle("active", a === "BTC"); document.getElementById("btn-chart-gold").classList.toggle("active", a === "GOLD"); }
     }
-    if (all.missed_signals) {
-      const mList = Object.values(all.missed_signals).reverse();
-      document.getElementById("missed-body").innerHTML = mList.map(m => { let badge = m.outcome === "SUCCESS" ? "<span class='pos-green'>WIN</span>" : (m.outcome === "FAILED" ? "<span class='neg-red'>LOSS</span>" : "PENDING"); return "<tr><td>" + m.time + "</td><td>" + m.symbol + "</td><td>" + m.side + "</td><td style='direction:ltr;'>" + m.entry + "/" + m.sl + "/" + m.tp + "</td><td>" + badge + "</td></tr>"; }).join("");
-    }
+    if (all.trade_history) { globalTrades = Object.values(all.trade_history).reverse(); document.getElementById("trades-body").innerHTML = globalTrades.map(t => { const w = t.pnl >= 0; return "<tr><td>" + t.time + "</td><td>" + (t.symbol || "BTC") + "</td><td>" + t.side + "</td><td>" + t.invested + "</td><td class='" + (w ? "pos-green" : "neg-red") + "'>" + (w ? "+" : "") + t.pnl + "</td><td style='color:#fbbf24;'>" + (t.vault_saved || 0) + "</td><td><b>" + t.balance_after + "</b></td></tr>"; }).join(""); }
+    if (all.missed_signals) { const mList = Object.values(all.missed_signals).reverse(); document.getElementById("missed-body").innerHTML = mList.map(m => { let b = m.outcome === "SUCCESS" ? "<span class='pos-green'>WIN</span>" : (m.outcome === "FAILED" ? "<span class='neg-red'>LOSS</span>" : "PENDING"); return "<tr><td>" + m.time + "</td><td>" + m.symbol + "</td><td>" + m.side + "</td><td style='direction:ltr;'>" + m.entry + "/" + m.sl + "/" + m.tp + "</td><td>" + b + "</td></tr>"; }).join(""); }
   }
 
   function exportExcel() {
@@ -316,13 +325,7 @@
     const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" })); link.download = "Crypto_Gold_Report.csv"; link.click();
   }
 
-  async function save() {
-    const data = { symbol: document.getElementById("symbol").value, timeframe: document.getElementById("timeframe").value, leverage: Number(document.getElementById("leverage").value), ema_period: Number(document.getElementById("ema_period").value), rsi_period: Number(document.getElementById("rsi_period").value), alloc_mode: document.getElementById("alloc_mode").value, alloc_value: Number(document.getElementById("alloc_value").value), vault_enabled: document.getElementById("vault_enabled").value === "true", base_capital: Number(document.getElementById("base_capital").value), vault_percent: Number(document.getElementById("vault_percent").value), risk_percent: Number(document.getElementById("risk").value), auto_trade: document.getElementById("auto").value === "true", api_key: document.getElementById("api_key").value.trim(), api_secret: document.getElementById("api_secret").value.trim() };
-    await fetch(DB_ROOT + "/settings.json", { method: "PATCH", body: JSON.stringify(data) });
-    alert("Settings Saved Successfully!");
-  }
-
-  async function save() {
+   async function save() {
     const data = {
       symbol: document.getElementById("symbol").value,
       timeframe: document.getElementById("timeframe").value,
@@ -339,7 +342,10 @@
       api_key: document.getElementById("api_key").value.trim(),
       api_secret: document.getElementById("api_secret").value.trim()
     };
-    await fetch(DB_ROOT + "/settings.json", { method: "PATCH", body: JSON.stringify(data) });
+    await fetch(DB_ROOT + "/settings.json", {
+      method: "PATCH",
+      body: JSON.stringify(data)
+    });
     alert("Settings Saved Successfully!");
   }
 
