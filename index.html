@@ -195,11 +195,20 @@
     redrawChart();
   }
 
+  function toggleRiskInput() {
+    const mode = document.getElementById("symbol").value;
+    const isMulti = mode.startsWith("TRIPLE") || mode.startsWith("DUAL");
+    const riskInp = document.getElementById("risk");
+    riskInp.disabled = isMulti;
+    riskInp.style.opacity = isMulti ? "0.4" : "1";
+  }
+
   function onMarketSelectChange() {
     userPickedChart = false;
     const selectedMode = document.getElementById("symbol").value;
     const targetAsset = getTargetAssetFromMode(selectedMode);
     setChartAsset(targetAsset, false);
+    toggleRiskInput();
   }
 
   function toggleAllocInput() {
@@ -296,6 +305,7 @@
       document.getElementById("btn-chart-gold").classList.toggle("active", target === "GOLD");
       document.getElementById("btn-chart-oil").classList.toggle("active", target === "OIL");
     }
+    toggleRiskInput();
     renderPrimaryStats();
     if (document.getElementById("tab-1").classList.contains("active")) redrawChart();
   }
@@ -364,7 +374,7 @@
     document.getElementById("auto").value = String(s.auto_trade || false);
     if (s.api_key) document.getElementById("api_key").value = s.api_key;
     if (s.api_secret) document.getElementById("api_secret").value = s.api_secret;
-    toggleAllocInput(); toggleVaultInputs(); settingsLoaded = true;
+    toggleAllocInput(); toggleVaultInputs(); toggleRiskInput(); settingsLoaded = true;
   }
 
   function updateExtraTabs(all) {
