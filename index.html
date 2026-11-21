@@ -65,6 +65,7 @@
         <div class="box"><div>🔴 مقاومت‌های کلیدی</div><div id="res" style="color:#f87171; direction:ltr; margin-top:4px;">---</div></div>
       </div>
     </div>
+
     <div class="card">
       <h4 style="margin:0 0 8px 0; color:#38bdf8;">⚡ آخرین معامله باز (پوزیشن فعال)</h4>
       <div id="open-pos-body" style="text-align:center; color:#94a3b8; font-size:13px;">در حال حاضر معامله بازی وجود ندارد.</div>
@@ -109,7 +110,6 @@
       <button class="btn-reset" onclick="resetDefaults()">🔄 بازگشت کلیه پارامترها به حالت استاندارد</button>
     </div>
   </div>
-
   <div class="tab-content" id="tab-1">
     <div class="card">
       <h4 style="margin:0 0 10px 0; color:#38bdf8;">📈 نمودار کندلی قیمت، اندیکاتورها و خطوط حمایت/مقاومت</h4>
@@ -148,7 +148,7 @@
   </div>
 </div>
 <script>
-  const DB_ROOT = "https://script.google.com/macros/s/AKfycbydFBPW-R9L_9Ic4W1gaNvH2RLLiptT5p1aTKgfT8W4AbB2Z828ZOh0iImi-fAZ2AXz_g/exec";
+  const DB_ROOT = "https://" + "mycryptoassistant-29926" + "-default-rtdb." + "firebaseio" + ".com";
   let globalTrades = [], lastMarketData = null, settingsLoaded = false;
 
   function switchTab(idx) {
@@ -322,19 +322,41 @@
     alert("Settings Saved Successfully!");
   }
 
+  async function save() {
+    const data = {
+      symbol: document.getElementById("symbol").value,
+      timeframe: document.getElementById("timeframe").value,
+      leverage: Number(document.getElementById("leverage").value),
+      ema_period: Number(document.getElementById("ema_period").value),
+      rsi_period: Number(document.getElementById("rsi_period").value),
+      alloc_mode: document.getElementById("alloc_mode").value,
+      alloc_value: Number(document.getElementById("alloc_value").value),
+      vault_enabled: document.getElementById("vault_enabled").value === "true",
+      base_capital: Number(document.getElementById("base_capital").value),
+      vault_percent: Number(document.getElementById("vault_percent").value),
+      risk_percent: Number(document.getElementById("risk").value),
+      auto_trade: document.getElementById("auto").value === "true",
+      api_key: document.getElementById("api_key").value.trim(),
+      api_secret: document.getElementById("api_secret").value.trim()
+    };
+    await fetch(DB_ROOT + "/settings.json", { method: "PATCH", body: JSON.stringify(data) });
+    alert("Settings Saved Successfully!");
+  }
+
   async function syncAll() {
     try {
-const res = await fetch(DB_ROOT + "/.json");
-const all = await res.json();
-if (!all) return;
-const wBal = all.live_market ? all.live_market.wallet_balance : 0;
-applySettings(all.settings, wBal);
-updateMarket(all.live_market);
-updateExtraTabs(all);
-} catch (e) {}
-}
-syncAll();
-setInterval(syncAll, 5000);
+      const res = await fetch(DB_ROOT + "/.json");
+      const all = await res.json();
+      if (!all) return;
+      const wBal = all.live_market ? all.live_market.wallet_balance : 0;
+      applySettings(all.settings, wBal);
+      updateMarket(all.live_market);
+      updateExtraTabs(all);
+    } catch (e) {}
+  }
+
+  syncAll();
+  setInterval(syncAll, 5000);
 </script>
 </body>
 </html>
