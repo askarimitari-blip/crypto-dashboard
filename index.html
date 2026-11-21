@@ -46,7 +46,7 @@
   <div class="tab-content active" id="tab-0">
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#94a3b8;">
-        <span>💰 موجودی صرافی: <b id="wallet-bal" style="color:#4ade80; direction:ltr;">0.00 USDT</b></span>
+        <span>💰 موجودی صرافی: <b id="wallet-bal" style="color:#4ade80; direction:ltr;">0.00</b></span>
         <span id="sym" style="color:#38bdf8; font-weight:bold;">در حال اتصال...</span>
       </div>
       <div class="price" id="prc">---</div>
@@ -69,7 +69,17 @@
     <div class="card">
       <h4 style="margin:0 0 8px 0; color:#38bdf8;">⚙️ تنظیمات ربات و مدیریت سرمایه</h4>
       <div class="grid-2">
-        <div><label>جفت ارز</label><input id="symbol" class="ltr" value="BTC/USDT"></div>
+        <div>
+          <label>جفت ارز (واقعی USDT / دمو VST)</label>
+          <select id="symbol" class="ltr">
+            <option value="BTC/USDT" selected>BTC/USDT (حساب واقعی)</option>
+            <option value="BTC/VST">BTC/VST (حساب دمو رایگان)</option>
+            <option value="ETH/USDT">ETH/USDT (حساب واقعی)</option>
+            <option value="ETH/VST">ETH/VST (حساب دمو رایگان)</option>
+            <option value="SOL/USDT">SOL/USDT (حساب واقعی)</option>
+            <option value="SOL/VST">SOL/VST (حساب دمو رایگان)</option>
+          </select>
+        </div>
         <div><label>تایم‌فریم</label><select id="timeframe" class="ltr"><option value="15m">15m</option><option value="1h">1h</option><option value="4h" selected>4h</option><option value="1d">1d</option></select></div>
       </div>
       <div class="grid-3">
@@ -82,7 +92,7 @@
         <div id="alloc-val-box"><label id="alloc-val-label">مقدار درصد سرمایه (%)</label><input id="alloc_value" class="ltr" type="number" value="10"></div>
       </div>
       <div class="grid-2">
-        <div><label>درصد ریسک استاپ‌لاس (%)</label><input id="risk" class="ltr" type="number" value="2" step="0.5"></div>
+        <div><label>سقف ریسک مجاز هوشمند (%)</label><input id="risk" class="ltr" type="number" value="2" step="0.5"></div>
         <div><label>معامله خودکار</label><select id="auto"><option value="false">خاموش (فقط هشدار)</option><option value="true">روشن (اجرای خودکار)</option></select></div>
       </div>
       <label>کلید API صرافی BingX</label><input id="api_key" class="ltr" type="password" placeholder="API Key">
@@ -130,7 +140,7 @@
 </div>
 
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbydFBPW-R9L_9Ic4W1gaNvH2RLLiptT5p1aTKgfT8W4AbB2Z828ZOh0iImi-fAZ2AXz_g/exec";
+  const API_URL = "YOUR_APPS_SCRIPT_URL";
   let globalTrades = [], lastMarketData = null, settingsLoaded = false;
 
   function switchTab(idx) {
@@ -166,9 +176,10 @@
   function updateMarket(d) {
     if (!d) return;
     lastMarketData = d;
+    const unit = (d.symbol && d.symbol.includes("VST")) ? " VST" : " USDT";
     document.getElementById("sym").innerText = d.symbol + " (" + d.timeframe + ")";
     document.getElementById("prc").innerText = "$ " + d.current_price;
-    document.getElementById("wallet-bal").innerText = (d.wallet_balance || 0) + " USDT";
+    document.getElementById("wallet-bal").innerText = (d.wallet_balance || 0) + unit;
     document.getElementById("sup").innerText = (d.supports || []).join(" | ");
     document.getElementById("res").innerText = (d.resistances || []).join(" | ");
     const trBox = document.getElementById("trend-box");
