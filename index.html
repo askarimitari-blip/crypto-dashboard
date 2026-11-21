@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>دستیار هوشمند ترید کریپتو</title>
+  <style>
+    body { font-family: Tahoma, sans-serif; background: #0f172a; color: #f8fafc; padding: 12px; margin: 0; }
+    .container { max-width: 780px; margin: 0 auto; }
+    .tabs { display: flex; gap: 5px; margin-bottom: 14px; flex-wrap: wrap; }
+    .tab-btn { flex: 1; min-width: 110px; padding: 10px 6px; background: #1e293b; color: #94a3b8; border: 1px solid #334155; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 11px; }
+    .tab-btn.active { background: #0284c7; color: white; border-color: #0284c7; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .card { background: #1e293b; padding: 16px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 14px; }
+    .price { font-size: 28px; font-weight: bold; color: #4ade80; text-align: center; margin: 6px 0; direction: ltr; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .box { background: #0f172a; padding: 10px; border-radius: 8px; text-align: center; font-size: 12px; }
+    label { display: block; font-size: 12px; color: #94a3b8; margin-top: 8px; }
+    input, select { width: 100%; padding: 9px; margin-top: 4px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; }
+    .ltr { direction: ltr; text-align: left; }
+    .btn-primary { width: 100%; padding: 12px; background: #0284c7; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 14px; }
+    .btn-reset { width: 100%; padding: 10px; background: #475569; color: #f8fafc; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 12px; }
+    .btn-excel { background: #16a34a; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; margin-top: 10px; }
+    th, td { padding: 8px 4px; border-bottom: 1px solid #334155; }
+    th { background: #0f172a; color: #38bdf8; }
+    .pos-green { color: #4ade80; font-weight: bold; direction: ltr; }
+    .neg-red { color: #f87171; font-weight: bold; direction: ltr; }
+    .chart-toggles { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; font-size: 12px; background: #0f172a; padding: 10px; border-radius: 8px; }
+    .chart-toggles label { margin: 0; display: flex; align-items: center; gap: 4px; cursor: pointer; color: #f8fafc; }
+    .chart-toggles input { width: auto; margin: 0; }
+    canvas { background: #0b1120; border-radius: 8px; border: 1px solid #334155; width: 100%; display: block; direction: ltr; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab(0)">📊 بازار و تنظیمات</button>
+    <button class="tab-btn" onclick="switchTab(1)">📈 نمودار گرافیکی</button>
+    <button class="tab-btn" onclick="switchTab(2)">📜 تاریخچه و اکسل</button>
+    <button class="tab-btn" onclick="switchTab(3)">🔔 اعلان‌های از دست رفته</button>
+  </div>
+
+  <div class="tab-content active" id="tab-0">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#94a3b8;">
+        <span>💰 موجودی صرافی: <b id="wallet-bal" style="color:#4ade80; direction:ltr;">0.00 USDT</b></span>
+        <span id="sym" style="color:#38bdf8; font-weight:bold;">در حال اتصال...</span>
+      </div>
+      <div class="price" id="prc">---</div>
+      <div class="grid-3" style="margin: 10px 0;">
+        <div class="box"><div>وضعیت روند (EMA)</div><b id="trend-box" style="font-size:13px;">---</b></div>
+        <div class="box"><div>اندیکاتور EMA</div><b id="ema-box" style="color:#38bdf8; direction:ltr;">---</b></div>
+        <div class="box"><div>اندیکاتور RSI</div><b id="rsi-box" style="color:#fbbf24; direction:ltr;">---</b></div>
+      </div>
+      <div class="grid-2">
+        <div class="box"><div>🟢 حمایت‌های کلیدی</div><div id="sup" style="color:#4ade80; direction:ltr; margin-top:4px;">---</div></div>
+        <div class="box"><div>🔴 مقاومت‌های کلیدی</div><div id="res" style="color:#f87171; direction:ltr; margin-top:4px;">---</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4 style="margin:0 0 8px 0; color:#38bdf8;">⚡ آخرین معامله باز (پوزیشن فعال)</h4>
+      <div id="open-pos-body" style="text-align:center; color:#94a3b8; font-size:13px;">در حال حاضر معامله بازی وجود ندارد.</div>
+    </div>
+
+    <div class="card">
+      <h4 style="margin:0 0 8px 0; color:#38bdf8;">⚙️ تنظیمات ربات و مدیریت سرمایه</h4>
+      <div class="grid-2">
+        <div><label>جفت ارز</label><input id="symbol" class="ltr" value="BTC/USDT"></div>
+        <div><label>تایم‌فریم</label><select id="timeframe" class="ltr"><option value="15m">15m</option><option value="1h">1h</option><option value="4h" selected>4h</option><option value="1d">1d</option></select></div>
+      </div>
+      <div class="grid-3">
+        <div><label>اهرم (ایمن: 3)</label><input id="leverage" class="ltr" type="number" value="3" min="1" max="50"></div>
+        <div><label>دوره EMA</label><input id="ema_period" class="ltr" type="number" value="200"></div>
+        <div><label>دوره RSI</label><input id="rsi_period" class="ltr" type="number" value="14"></div>
+      </div>
+      <div class="grid-2">
+        <div><label>نحوه ورود سرمایه در هر معامله</label><select id="alloc_mode" onchange="toggleAllocInput()"><option value="percent">درصدی از موجودی صرافی (%)</option><option value="fixed">مبلغ ثابت دلاری دستی ($)</option><option value="all">کل موجودی صرافی (All-In)</option></select></div>
+        <div id="alloc-val-box"><label id="alloc-val-label">مقدار درصد سرمایه (%)</label><input id="alloc_value" class="ltr" type="number" value="10"></div>
+      </div>
+      <div class="grid-2">
+        <div><label>درصد ریسک استاپ‌لاس (%)</label><input id="risk" class="ltr" type="number" value="2" step="0.5"></div>
+        <div><label>معامله خودکار</label><select id="auto"><option value="false">خاموش (فقط هشدار)</option><option value="true">روشن (اجرای خودکار)</option></select></div>
+      </div>
+      <label>کلید API صرافی BingX</label><input id="api_key" class="ltr" type="password" placeholder="API Key">
+      <label>کلید Secret صرافی BingX</label><input id="api_secret" class="ltr" type="password" placeholder="Secret Key">
+      <button class="btn-primary" onclick="save()">💾 ذخیره و اعمال تنظیمات</button>
+      <button class="btn-reset" onclick="resetDefaults()">🔄 بازگشت کلیه پارامترها به حالت استاندارد</button>
+    </div>
+  </div>
+  <div class="tab-content" id="tab-1">
+    <div class="card">
+      <h4 style="margin:0 0 10px 0; color:#38bdf8;">📈 نمودار کندلی قیمت، اندیکاتورها و خطوط حمایت/مقاومت</h4>
+      <div class="chart-toggles">
+        <label><input type="checkbox" id="chk-ema" checked onchange="redrawChart()"> خط EMA (نارنجی)</label>
+        <label><input type="checkbox" id="chk-sup" checked onchange="redrawChart()"> خطوط حمایت (سبز)</label>
+        <label><input type="checkbox" id="chk-res" checked onchange="redrawChart()"> خطوط مقاومت (قرمز)</label>
+        <label><input type="checkbox" id="chk-rsi" checked onchange="redrawChart()"> پنجره RSI</label>
+      </div>
+      <canvas id="priceChart"></canvas>
+      <div id="rsi-container" style="margin-top:10px;"><canvas id="rsiChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-2">
+    <div class="card" style="overflow-x:auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h4 style="margin:0; color:#38bdf8;">📜 گزارش کامل معاملات</h4>
+        <button class="btn-excel" onclick="exportExcel()">📥 خروجی اکسل</button>
+      </div>
+      <table>
+        <thead><tr><th>تاریخ</th><th>جهت</th><th>سرمایه ($)</th><th>سود/زیان ($)</th><th>کارمزد ($)</th><th>موجودی بعد ($)</th><th>نتیجه</th></tr></thead>
+        <tbody id="trades-body"><tr><td colspan="7">هنوز معامله‌ای ثبت نشده است.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-3">
+    <div class="card" style="overflow-x:auto;">
+      <h4 style="margin:0 0 10px 0; color:#38bdf8;">🔔 اعلان‌های از دست رفته و ارزیابی پیش‌بینی</h4>
+      <table>
+        <thead><tr><th>زمان</th><th>ارز</th><th>سیگنال</th><th>ورود / SL / TP</th><th>نتیجه پیش‌بینی</th></tr></thead>
+        <tbody id="missed-body"><tr><td colspan="5">اعلان از دست رفته‌ای ثبت نشده است.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API_URL = "YOUR_NEW_APPS_SCRIPT_URL";
+  let globalTrades = [], lastMarketData = null, settingsLoaded = false;
+
+  function switchTab(idx) {
+    document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+    document.querySelectorAll('.tab-content').forEach((c, i) => c.classList.toggle('active', i === idx));
+    if (idx === 1 && lastMarketData) setTimeout(redrawChart, 50);
+  }
+
+  function toggleAllocInput() {
+    const mode = document.getElementById("alloc_mode").value;
+    const box = document.getElementById("alloc-val-box");
+    const lbl = document.getElementById("alloc-val-label");
+    if (mode === "all") { box.style.visibility = "hidden"; }
+    else {
+      box.style.visibility = "visible";
+      lbl.innerText = mode === "fixed" ? "مبلغ ثابت دلاری ($)" : "درصد از موجودی (%)";
+    }
+  }
+
+  function resetDefaults() {
+    document.getElementById("symbol").value = "BTC/USDT";
+    document.getElementById("timeframe").value = "4h";
+    document.getElementById("leverage").value = 3;
+    document.getElementById("ema_period").value = 200;
+    document.getElementById("rsi_period").value = 14;
+    document.getElementById("alloc_mode").value = "percent";
+    document.getElementById("alloc_value").value = 10;
+    document.getElementById("risk").value = 2;
+    toggleAllocInput();
+    alert("🔄 مقادیر فرم به حالت استاندارد برگشت. برای اعمال نهایی روی دکمه ذخیره کلیک کنید.");
+  }
+
+  function updateMarket(d) {
+    if (!d) return;
+    lastMarketData = d;
+    document.getElementById("sym").innerText = d.symbol + " (" + d.timeframe + ")";
+    document.getElementById("prc").innerText = "$ " + d.current_price;
+    document.getElementById("wallet-bal").innerText = (d.wallet_balance || 0) + " USDT";
+    document.getElementById("sup").innerText = (d.supports || []).join(" | ");
+    document.getElementById("res").innerText = (d.resistances || []).join(" | ");
+    const trBox = document.getElementById("trend-box");
+    if (d.trend === "BULLISH") { trBox.innerText = "صعودی 🟢"; trBox.style.color = "#4ade80"; }
+    else if (d.trend === "BEARISH") { trBox.innerText = "نزولی 🔴"; trBox.style.color = "#f87171"; }
+    document.getElementById("ema-box").innerText = "EMA(" + (d.ema_period || 200) + "): " + (d.ema_val || "---");
+    document.getElementById("rsi-box").innerText = "RSI(" + (d.rsi_period || 14) + "): " + (d.rsi_val || "---");
+    if (document.getElementById("tab-1").classList.contains("active")) redrawChart();
+  }
+  function redrawChart() {
+    if (!lastMarketData || !lastMarketData.chart || !lastMarketData.chart.closes) return;
+    const c = lastMarketData.chart;
+    const showEma = document.getElementById("chk-ema").checked;
+    const showSup = document.getElementById("chk-sup").checked;
+    const showRes = document.getElementById("chk-res").checked;
+    const showRsi = document.getElementById("chk-rsi").checked;
+
+    const canvas = document.getElementById("priceChart");
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width = Math.max(300, canvas.parentElement.clientWidth - 20);
+    const H = canvas.height = 320;
+    ctx.clearRect(0, 0, W, H);
+    ctx.textAlign = "left";
+
+    const padR = 78, padB = 25, padT = 15, padL = 10;
+    const plotW = W - padR - padL, plotH = H - padB - padT;
+    const highs = c.highs || c.closes, lows = c.lows || c.closes, opens = c.opens || c.closes;
+    let allVals = highs.concat(lows);
+    if (showEma && c.ema) allVals = allVals.concat(c.ema);
+    if (showSup && lastMarketData.supports) allVals = allVals.concat(lastMarketData.supports);
+    if (showRes && lastMarketData.resistances) allVals = allVals.concat(lastMarketData.resistances);
+
+    const maxP = Math.max.apply(null, allVals), minP = Math.min.apply(null, allVals);
+    const rangeP = (maxP - minP) || 1;
+    const toY = p => padT + plotH - ((p - minP) / rangeP) * plotH;
+
+    ctx.strokeStyle = "#334155"; ctx.fillStyle = "#94a3b8"; ctx.font = "11px Tahoma"; ctx.lineWidth = 0.5;
+    for (let g = 0; g <= 5; g++) {
+      const pVal = minP + (rangeP * g / 5), y = toY(pVal);
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+      ctx.fillText(pVal.toFixed(1), W - padR + 6, y + 4);
+    }
+    if (showSup && lastMarketData.supports) {
+      lastMarketData.supports.forEach(s => { const y = toY(s); ctx.strokeStyle = "#4ade80"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke(); });
+    }
+    if (showRes && lastMarketData.resistances) {
+      lastMarketData.resistances.forEach(r => { const y = toY(r); ctx.strokeStyle = "#f87171"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke(); });
+    }
+
+    const n = c.closes.length, step = plotW / n, candleW = Math.max(3, step * 0.65);
+    for (let i = 0; i < n; i++) {
+      const x = padL + i * step + step / 2, yO = toY(opens[i]), yC = toY(c.closes[i]), yH = toY(highs[i]), yL = toY(lows[i]);
+      const isUp = c.closes[i] >= opens[i];
+      ctx.strokeStyle = isUp ? "#4ade80" : "#f87171"; ctx.fillStyle = isUp ? "#4ade80" : "#f87171"; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x, yH); ctx.lineTo(x, yL); ctx.stroke();
+      ctx.fillRect(x - candleW / 2, Math.min(yO, yC), candleW, Math.max(1.5, Math.abs(yC - yO)));
+      if (i % Math.ceil(n / 5) === 0 && c.times && c.times[i]) {
+        ctx.fillStyle = "#64748b";
+        const parts = c.times[i].split(" ");
+        ctx.fillText(parts[parts.length - 1], x - 12, H - 8);
+      }
+    }
+    if (showEma && c.ema) {
+      ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 1.8; ctx.beginPath();
+      c.ema.forEach((val, i) => { const x = padL + i * step + step / 2, y = toY(val); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); });
+      ctx.stroke();
+    }
+    const curY = toY(lastMarketData.current_price);
+    ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, curY); ctx.lineTo(W - padR, curY); ctx.stroke();
+    ctx.fillStyle = "#0284c7"; ctx.fillRect(W - padR + 2, curY - 9, 72, 18);
+    ctx.fillStyle = "#ffffff"; ctx.fillText(lastMarketData.current_price, W - padR + 6, curY + 4);
+
+    const rsiDiv = document.getElementById("rsi-container");
+    rsiDiv.style.display = showRsi ? "block" : "none";
+    if (showRsi && c.rsi) {
+      const rCanvas = document.getElementById("rsiChart"), rCtx = rCanvas.getContext("2d");
+      rCanvas.width = W; rCanvas.height = 95; rCtx.clearRect(0, 0, W, 95); rCtx.textAlign = "left";
+      const toRY = v => 10 + 75 - (v / 100) * 75;
+      rCtx.strokeStyle = "#334155"; rCtx.lineWidth = 0.5;
+      const rLevels = new Array(30, 70);
+      rLevels.forEach(lvl => { const y = toRY(lvl); rCtx.beginPath(); rCtx.moveTo(padL, y); rCtx.lineTo(W - padR, y); rCtx.stroke(); rCtx.fillStyle = "#94a3b8"; rCtx.fillText(lvl, W - padR + 6, y + 4); });
+      rCtx.strokeStyle = "#a855f7"; rCtx.lineWidth = 1.5; rCtx.beginPath();
+      c.rsi.forEach((v, i) => { const x = padL + i * step + step / 2, y = toRY(v); if (i === 0) rCtx.moveTo(x, y); else rCtx.lineTo(x, y); });
+      rCtx.stroke();
+    }
+  }
+
+  function applySettings(s) {
+    if (!s || settingsLoaded) return;
+    if (s.symbol) document.getElementById("symbol").value = s.symbol;
+    if (s.timeframe) document.getElementById("timeframe").value = s.timeframe;
+    document.getElementById("leverage").value = s.leverage || 3;
+    document.getElementById("ema_period").value = s.ema_period || 200;
+    document.getElementById("rsi_period").value = s.rsi_period || 14;
+    if (s.alloc_mode) document.getElementById("alloc_mode").value = s.alloc_mode;
+    if (s.alloc_value) document.getElementById("alloc_value").value = s.alloc_value;
+    if (s.risk_percent) document.getElementById("risk").value = s.risk_percent;
+    document.getElementById("auto").value = String(s.auto_trade || false);
+    if (s.api_key) document.getElementById("api_key").value = s.api_key;
+    if (s.api_secret) document.getElementById("api_secret").value = s.api_secret;
+    toggleAllocInput();
+    settingsLoaded = true;
+  }
+
+  function updateExtraTabs(all) {
+    if (!all) return;
+    const pos = all.open_position, posDiv = document.getElementById("open-pos-body");
+    if (pos && pos.status === "OPEN") {
+      const pnlClass = pos.unrealized_pnl >= 0 ? "pos-green" : "neg-red", pnlSign = pos.unrealized_pnl >= 0 ? "+" : "";
+      posDiv.innerHTML = "<div style='display:flex; justify-content:space-between; margin-bottom:8px;'><span>" + pos.symbol + " (" + pos.side + " " + pos.leverage + "x)</span><span class='" + pnlClass + "'>" + pnlSign + pos.unrealized_pnl + " $</span></div><div class='grid-2'><div class='box'>ورود: " + pos.entry_price + "</div><div class='box'>سرمایه: " + pos.margin + " $</div><div class='box'>حد سود: " + pos.tp + "</div><div class='box'>حد ضرر: " + pos.sl + "</div></div>";
+    } else { posDiv.innerHTML = "در حال حاضر معامله بازی وجود ندارد."; }
+    if (all.trade_history) {
+      globalTrades = Object.values(all.trade_history).reverse();
+      document.getElementById("trades-body").innerHTML = globalTrades.map(t => { const isWin = t.pnl >= 0; return "<tr><td>" + t.time + "</td><td>" + (t.side === "LONG" ? "🟢 خرید" : "🔴 فروش") + "</td><td>" + t.invested + "</td><td class='" + (isWin ? "pos-green" : "neg-red") + "'>" + (isWin ? "+" : "") + t.pnl + "</td><td>" + t.fee + "</td><td><b>" + t.balance_after + "</b></td><td>" + (isWin ? "✅ موفق" : "❌ ناموفق") + "</td></tr>"; }).join("");
+    }
+    if (all.missed_signals) {
+      const mList = Object.values(all.missed_signals).reverse();
+      document.getElementById("missed-body").innerHTML = mList.map(m => { let badge = m.outcome === "SUCCESS" ? "<span class='pos-green'>✅ موفق</span>" : (m.outcome === "FAILED" ? "<span class='neg-red'>❌ ناموفق</span>" : "⏳ در جریان"); return "<tr><td>" + m.time + "</td><td>" + m.symbol + "</td><td>" + m.side + "</td><td style='direction:ltr;'>" + m.entry + "/" + m.sl + "/" + m.tp + "</td><td>" + badge + "</td></tr>"; }).join("");
+    }
+  }
+
+  function exportExcel() {
+    if (!globalTrades.length) { alert("داده‌ای برای خروجی وجود ندارد."); return; }
+    let csv = "\uFEFFتاریخ,ارز,جهت,سرمایه($),سود و زیان($),کارمزد($),موجودی نهایی($),وضعیت\n";
+    globalTrades.forEach(t => { csv += t.time + "," + t.symbol + "," + t.side + "," + t.invested + "," + t.pnl + "," + t.fee + "," + t.balance_after + "," + (t.pnl >= 0 ? "موفق" : "ناموفق") + "\n"; });
+    const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" })); link.download = "Crypto_Trades_Report.csv"; link.click();
+  }
+
+  async function save() {
+    const data = { symbol: document.getElementById("symbol").value.trim().toUpperCase(), timeframe: document.getElementById("timeframe").value, leverage: Number(document.getElementById("leverage").value), ema_period: Number(document.getElementById("ema_period").value), rsi_period: Number(document.getElementById("rsi_period").value), alloc_mode: document.getElementById("alloc_mode").value, alloc_value: Number(document.getElementById("alloc_value").value), risk_percent: Number(document.getElementById("risk").value), auto_trade: document.getElementById("auto").value === "true", api_key: document.getElementById("api_key").value.trim(), api_secret: document.getElementById("api_secret").value.trim() };
+    await fetch(API_URL, { method: "POST", body: JSON.stringify(data) });
+    alert("✅ تنظیمات جدید در سرور ذخیره شد");
+  }
+
+  async function syncAll() {
+    try {
+      const res = await fetch(API_URL + "?path=all");
+      const all = await res.json();
+      if (!all) return;
+      applySettings(all.settings);
+      updateMarket(all.live_market);
+      updateExtraTabs(all);
+    } catch (e) {}
+  }
+
+  syncAll();
+  setInterval(syncAll, 5000);
+</script>
+</body>
+</html>
