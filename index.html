@@ -3,18 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>دستیار هوشمند ترید بیت‌کوین و طلا</title>
+  <title>دستیار هوشمند ترید بیت‌کوین، طلا و نفت</title>
   <style>
     body { font-family: Tahoma, sans-serif; background: #0f172a; color: #f8fafc; padding: 12px; margin: 0; }
-    .container { max-width: 780px; margin: 0 auto; }
+    .container { max-width: 820px; margin: 0 auto; }
     .tabs { display: flex; gap: 5px; margin-bottom: 14px; flex-wrap: wrap; }
-    .tab-btn { flex: 1; min-width: 110px; padding: 10px 6px; background: #1e293b; color: #94a3b8; border: 1px solid #334155; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 11px; }
+    .tab-btn { flex: 1; min-width: 100px; padding: 10px 6px; background: #1e293b; color: #94a3b8; border: 1px solid #334155; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 11px; }
     .tab-btn.active { background: #0284c7; color: white; border-color: #0284c7; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
     .card { background: #1e293b; padding: 16px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 14px; }
-    .price { font-size: 24px; font-weight: bold; color: #4ade80; text-align: center; margin: 4px 0; direction: ltr; }
-    .gold-price { font-size: 24px; font-weight: bold; color: #fbbf24; text-align: center; margin: 4px 0; direction: ltr; }
+    .price { font-size: 20px; font-weight: bold; color: #4ade80; text-align: center; margin: 4px 0; direction: ltr; }
+    .gold-price { font-size: 20px; font-weight: bold; color: #fbbf24; text-align: center; margin: 4px 0; direction: ltr; }
+    .oil-price { font-size: 20px; font-weight: bold; color: #38bdf8; text-align: center; margin: 4px 0; direction: ltr; }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
     .box { background: #0f172a; padding: 10px; border-radius: 8px; text-align: center; font-size: 12px; }
@@ -51,9 +52,10 @@
         <span>🏦 صندوق ذخیره سود: <b id="vault-bal" style="color:#fbbf24; direction:ltr;">0.00 $</b></span>
         <span id="sym" style="color:#38bdf8; font-weight:bold;">در حال اتصال...</span>
       </div>
-      <div class="grid-2" style="margin-bottom:10px;">
-        <div class="box"><div style="color:#94a3b8;">₿ بیت‌کوین (BTC) <span id="btc-tr">---</span></div><div class="price" id="prc">---</div></div>
-        <div class="box"><div style="color:#94a3b8;">🪙 طلای جهانی (XAU) <span id="gold-tr">---</span></div><div class="gold-price" id="gold-prc">---</div></div>
+      <div class="grid-3" style="margin-bottom:10px;">
+        <div class="box"><div style="color:#94a3b8;">₿ بیت‌کوین <span id="btc-tr">---</span></div><div class="price" id="prc">---</div></div>
+        <div class="box"><div style="color:#94a3b8;">🪙 طلا (XAU) <span id="gold-tr">---</span></div><div class="gold-price" id="gold-prc">---</div></div>
+        <div class="box"><div style="color:#94a3b8;">🛢️ نفت (WTI) <span id="oil-tr">---</span></div><div class="oil-price" id="oil-prc">---</div></div>
       </div>
       <div class="grid-3" style="margin: 10px 0;">
         <div class="box"><div>وضعیت روند اصلی</div><b id="trend-box" style="font-size:13px;">---</b></div>
@@ -77,11 +79,12 @@
         <div>
           <label>انتخاب بازار و حالت ترید</label>
           <select id="symbol" class="ltr">
-            <option value="DUAL_USDT" selected>BTC + XAU هم‌زمان (واقعی USDT)</option>
-            <option value="DUAL_VST">BTC + XAU هم‌زمان (دمو VST)</option>
-            <option value="BTC/USDT">BTC/USDT (فقط بیت‌کوین واقعی)</option>
-            <option value="BTC/VST">BTC/VST (فقط بیت‌کوین دمو)</option>
-            <option value="PAXG/USDT">XAU/PAXG (فقط طلا واقعی)</option>
+            <option value="TRIPLE_USDT" selected>BTC + XAU + OIL سه‌گانه (واقعی USDT)</option>
+            <option value="TRIPLE_VST">BTC + XAU + OIL سه‌گانه (دمو VST)</option>
+            <option value="DUAL_USDT">BTC + XAU دوتایی (واقعی USDT)</option>
+            <option value="BTC/USDT">BTC/USDT (فقط بیت‌کوین)</option>
+            <option value="PAXG/USDT">XAU/PAXG (فقط طلا)</option>
+            <option value="WTI/USDT">WTI/OIL (فقط نفت خام)</option>
           </select>
         </div>
         <div><label>تایم‌فریم</label><select id="timeframe" class="ltr"><option value="15m">15m</option><option value="1h">1h</option><option value="4h" selected>4h</option><option value="1d">1d</option></select></div>
@@ -120,9 +123,10 @@
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
         <h4 style="margin:0; color:#38bdf8;">📈 نمودار کندلی قیمت و اندیکاتورها</h4>
-        <div style="display:flex; gap:6px;">
-          <button type="button" id="btn-chart-btc" class="tab-btn active" style="padding:6px 12px;" onclick="setChartAsset('BTC')">₿ بیت‌کوین (BTC)</button>
-          <button type="button" id="btn-chart-gold" class="tab-btn" style="padding:6px 12px;" onclick="setChartAsset('GOLD')">🪙 طلای جهانی (XAU)</button>
+        <div style="display:flex; gap:5px; flex-wrap:wrap;">
+          <button type="button" id="btn-chart-btc" class="tab-btn active" style="padding:6px 10px; min-width:85px;" onclick="setChartAsset('BTC')">₿ بیت‌کوین</button>
+          <button type="button" id="btn-chart-gold" class="tab-btn" style="padding:6px 10px; min-width:85px;" onclick="setChartAsset('GOLD')">🪙 طلا (XAU)</button>
+          <button type="button" id="btn-chart-oil" class="tab-btn" style="padding:6px 10px; min-width:85px;" onclick="setChartAsset('OIL')">🛢️ نفت (WTI)</button>
         </div>
       </div>
       <div class="chart-toggles">
@@ -175,6 +179,7 @@
     userPickedChart = true;
     document.getElementById("btn-chart-btc").classList.toggle("active", asset === "BTC");
     document.getElementById("btn-chart-gold").classList.toggle("active", asset === "GOLD");
+    document.getElementById("btn-chart-oil").classList.toggle("active", asset === "OIL");
     redrawChart();
   }
 
@@ -200,7 +205,7 @@
   }
 
   function resetDefaults() {
-    document.getElementById("symbol").value = "DUAL_USDT";
+    document.getElementById("symbol").value = "TRIPLE_USDT";
     document.getElementById("timeframe").value = "4h";
     document.getElementById("leverage").value = 3;
     document.getElementById("ema_period").value = 200;
@@ -223,12 +228,14 @@
     document.getElementById("sym").innerText = d.symbol + " (" + d.timeframe + ")";
     document.getElementById("prc").innerText = "$ " + d.current_price;
     document.getElementById("gold-prc").innerText = "$ " + (d.gold_price || "---");
+    document.getElementById("oil-prc").innerText = "$ " + (d.oil_price || "---");
     document.getElementById("wallet-bal").innerText = (d.wallet_balance || 0) + unit;
     document.getElementById("vault-bal").innerText = (d.vault_balance || 0) + " $";
     document.getElementById("sup").innerText = (d.supports || []).join(" | ");
     document.getElementById("res").innerText = (d.resistances || []).join(" | ");
     document.getElementById("btc-tr").innerText = d.trend === "BULLISH" ? "UP" : "DOWN";
     document.getElementById("gold-tr").innerText = d.gold_trend === "BULLISH" ? "UP" : "DOWN";
+    document.getElementById("oil-tr").innerText = d.oil_trend === "BULLISH" ? "UP" : "DOWN";
     const trBox = document.getElementById("trend-box");
     if (d.trend === "BULLISH") { trBox.innerText = "BULLISH"; trBox.style.color = "#4ade80"; }
     else if (d.trend === "BEARISH") { trBox.innerText = "BEARISH"; trBox.style.color = "#f87171"; }
@@ -238,12 +245,13 @@
   }
   function redrawChart() {
     if (!lastMarketData) return;
-    const isGold = activeChartAsset === "GOLD";
-    const c = (isGold && lastMarketData.gold_chart) ? lastMarketData.gold_chart : lastMarketData.chart;
+    let c = lastMarketData.chart, supsList = lastMarketData.supports || [], ressList = lastMarketData.resistances || [], activeP = lastMarketData.current_price;
+    if (activeChartAsset === "GOLD" && lastMarketData.gold_chart) {
+      c = lastMarketData.gold_chart; supsList = lastMarketData.gold_supports || []; ressList = lastMarketData.gold_resistances || []; activeP = lastMarketData.gold_price;
+    } else if (activeChartAsset === "OIL" && lastMarketData.oil_chart) {
+      c = lastMarketData.oil_chart; supsList = lastMarketData.oil_supports || []; ressList = lastMarketData.oil_resistances || []; activeP = lastMarketData.oil_price;
+    }
     if (!c || !c.closes) return;
-    const supsList = isGold ? (lastMarketData.gold_supports || []) : (lastMarketData.supports || []);
-    const ressList = isGold ? (lastMarketData.gold_resistances || []) : (lastMarketData.resistances || []);
-    const activeP = isGold ? lastMarketData.gold_price : lastMarketData.current_price;
     const showEma = document.getElementById("chk-ema").checked, showSup = document.getElementById("chk-sup").checked, showRes = document.getElementById("chk-res").checked, showRsi = document.getElementById("chk-rsi").checked;
     const canvas = document.getElementById("priceChart"), ctx = canvas.getContext("2d");
     const W = canvas.width = Math.max(300, canvas.parentElement.clientWidth - 20), H = canvas.height = 330;
@@ -309,10 +317,10 @@
     if (pos && pos.status === "OPEN") {
       const pnlClass = pos.unrealized_pnl >= 0 ? "pos-green" : "neg-red", pnlSign = pos.unrealized_pnl >= 0 ? "+" : "";
       posDiv.innerHTML = "<div style='display:flex; justify-content:space-between; margin-bottom:8px;'><span>" + pos.symbol + " (" + pos.side + " " + pos.leverage + "x)</span><span class='" + pnlClass + "'>" + pnlSign + pos.unrealized_pnl + " $</span></div><div class='grid-2'><div class='box'>Entry: " + pos.entry_price + "</div><div class='box'>Margin: " + pos.margin + " $</div><div class='box'>TP: " + pos.tp + "</div><div class='box'>SL: " + pos.sl + "</div></div>";
-      if (!userPickedChart) { const a = (pos.symbol.includes("PAXG") || pos.symbol.includes("XAU")) ? "GOLD" : "BTC"; activeChartAsset = a; document.getElementById("btn-chart-btc").classList.toggle("active", a === "BTC"); document.getElementById("btn-chart-gold").classList.toggle("active", a === "GOLD"); }
+      if (!userPickedChart) { const a = (pos.symbol.includes("WTI") || pos.symbol.includes("OIL")) ? "OIL" : ((pos.symbol.includes("PAXG") || pos.symbol.includes("XAU")) ? "GOLD" : "BTC"); setChartAsset(a); userPickedChart = false; }
     } else {
       posDiv.innerHTML = "No open position.";
-      if (!userPickedChart && all.live_market && all.live_market.symbol) { const sym = all.live_market.symbol, a = (sym.includes("PAXG") || sym.includes("XAU")) ? "GOLD" : "BTC"; activeChartAsset = a; document.getElementById("btn-chart-btc").classList.toggle("active", a === "BTC"); document.getElementById("btn-chart-gold").classList.toggle("active", a === "GOLD"); }
+      if (!userPickedChart && all.live_market && all.live_market.symbol) { const sym = all.live_market.symbol, a = (sym.includes("WTI") || sym.includes("OIL")) ? "OIL" : ((sym.includes("PAXG") || sym.includes("XAU")) ? "GOLD" : "BTC"); setChartAsset(a); userPickedChart = false; }
     }
     if (all.trade_history) { globalTrades = Object.values(all.trade_history).reverse(); document.getElementById("trades-body").innerHTML = globalTrades.map(t => { const w = t.pnl >= 0; return "<tr><td>" + t.time + "</td><td>" + (t.symbol || "BTC") + "</td><td>" + t.side + "</td><td>" + t.invested + "</td><td class='" + (w ? "pos-green" : "neg-red") + "'>" + (w ? "+" : "") + t.pnl + "</td><td style='color:#fbbf24;'>" + (t.vault_saved || 0) + "</td><td><b>" + t.balance_after + "</b></td></tr>"; }).join(""); }
     if (all.missed_signals) { const mList = Object.values(all.missed_signals).reverse(); document.getElementById("missed-body").innerHTML = mList.map(m => { let b = m.outcome === "SUCCESS" ? "<span class='pos-green'>WIN</span>" : (m.outcome === "FAILED" ? "<span class='neg-red'>LOSS</span>" : "PENDING"); return "<tr><td>" + m.time + "</td><td>" + m.symbol + "</td><td>" + m.side + "</td><td style='direction:ltr;'>" + m.entry + "/" + m.sl + "/" + m.tp + "</td><td>" + b + "</td></tr>"; }).join(""); }
@@ -322,7 +330,7 @@
     if (!globalTrades.length) { alert("No trades to export."); return; }
     let csv = "Time,Symbol,Side,Invested($),PnL($),VaultSaved($),Fee($),BalanceAfter($)\n";
     globalTrades.forEach(t => { csv += t.time + "," + (t.symbol || "BTC") + "," + t.side + "," + t.invested + "," + t.pnl + "," + (t.vault_saved || 0) + "," + t.fee + "," + t.balance_after + "\n"; });
-    const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" })); link.download = "Crypto_Gold_Report.csv"; link.click();
+    const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" })); link.download = "Triple_Portfolio_Report.csv"; link.click();
   }
 
    async function save() {
