@@ -189,11 +189,11 @@
     const canvas = document.getElementById("priceChart");
     const ctx = canvas.getContext("2d");
     const W = canvas.width = Math.max(300, canvas.parentElement.clientWidth - 20);
-    const H = canvas.height = 320;
+    const H = canvas.height = 330;
     ctx.clearRect(0, 0, W, H);
     ctx.textAlign = "left";
 
-    const padR = 78, padB = 25, padT = 15, padL = 10;
+    const padR = 78, padB = 28, padT = 15, padL = 10;
     const plotW = W - padR - padL, plotH = H - padB - padT;
     const highs = c.highs || c.closes, lows = c.lows || c.closes, opens = c.opens || c.closes;
     let allVals = highs.concat(lows);
@@ -218,17 +218,28 @@
       lastMarketData.resistances.forEach(r => { const y = toY(r); ctx.strokeStyle = "#f87171"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke(); });
     }
 
+    ctx.strokeStyle = "#475569"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(padL, H - padB); ctx.lineTo(W - padR, H - padB); ctx.stroke();
+
     const n = c.closes.length, step = plotW / n, candleW = Math.max(3, step * 0.65);
+    const tf = lastMarketData.timeframe || "4h";
+    const tickInterval = Math.max(1, Math.floor(n / 6));
+
     for (let i = 0; i < n; i++) {
       const x = padL + i * step + step / 2, yO = toY(opens[i]), yC = toY(c.closes[i]), yH = toY(highs[i]), yL = toY(lows[i]);
       const isUp = c.closes[i] >= opens[i];
       ctx.strokeStyle = isUp ? "#4ade80" : "#f87171"; ctx.fillStyle = isUp ? "#4ade80" : "#f87171"; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(x, yH); ctx.lineTo(x, yL); ctx.stroke();
       ctx.fillRect(x - candleW / 2, Math.min(yO, yC), candleW, Math.max(1.5, Math.abs(yC - yO)));
-      if (i % Math.ceil(n / 5) === 0 && c.times && c.times[i]) {
-        ctx.fillStyle = "#64748b";
+
+      ctx.strokeStyle = "#475569";
+      ctx.beginPath(); ctx.moveTo(x, H - padB); ctx.lineTo(x, H - padB + (i % tickInterval === 0 ? 7 : 3)); ctx.stroke();
+
+      if (i % tickInterval === 0 && c.times && c.times[i]) {
+        ctx.fillStyle = "#94a3b8"; ctx.font = "10px Tahoma";
         const parts = c.times[i].split(" ");
-        ctx.fillText(parts[parts.length - 1], x - 12, H - 8);
+        const timeLabel = (tf === "1d" || tf === "4h") ? c.times[i] : (parts[parts.length - 1]);
+        ctx.fillText(timeLabel, x - 20, H - 8);
       }
     }
     if (showEma && c.ema) {
