@@ -245,26 +245,34 @@
     if (!lastMarketData) return;
     const d = lastMarketData;
     let tr = d.trend, ema = d.ema_val, rsi = d.rsi_val, sups = d.supports || [], ress = d.resistances || [];
+    let assetFa = "\u0628\u06cc\u062a\u200c\u06a9\u0648\u06cc\u0646";
     if (activeChartAsset === "GOLD") {
       tr = d.gold_trend || d.trend;
       ema = d.gold_ema || d.ema_val;
       rsi = d.gold_rsi || d.rsi_val;
       sups = d.gold_supports || [];
       ress = d.gold_resistances || [];
+      assetFa = "\u0637\u0644\u0627";
     } else if (activeChartAsset === "OIL") {
       tr = d.oil_trend || d.trend;
       ema = d.oil_ema || d.ema_val;
       rsi = d.oil_rsi || d.rsi_val;
       sups = d.oil_supports || [];
       ress = d.oil_resistances || [];
+      assetFa = "\u0646\u0641\u062a";
     }
-    document.getElementById("sup").innerText = sups.join(" | ") || "---";
-    document.getElementById("res").innerText = ress.join(" | ") || "---";
+    document.getElementById("sup").innerText = sups.map(x => Number(x).toFixed(2)).join(" | ") || "---";
+    document.getElementById("res").innerText = ress.map(x => Number(x).toFixed(2)).join(" | ") || "---";
     const trBox = document.getElementById("trend-box");
-    if (tr === "BULLISH") { trBox.innerText = "BULLISH (" + activeChartAsset + ")"; trBox.style.color = "#4ade80"; }
-    else if (tr === "BEARISH") { trBox.innerText = "BEARISH (" + activeChartAsset + ")"; trBox.style.color = "#f87171"; }
-    document.getElementById("ema-box").innerText = "EMA(" + (d.ema_period || 200) + "): " + (ema || "---");
-    document.getElementById("rsi-box").innerText = "RSI(" + (d.rsi_period || 14) + "): " + (rsi || "---");
+    if (tr === "BULLISH") {
+      trBox.innerText = "\u0635\u0639\u0648\u062f\u06cc \uD83D\uDFE2 (" + assetFa + ")";
+      trBox.style.color = "#4ade80";
+    } else if (tr === "BEARISH") {
+      trBox.innerText = "\u0646\u0632\u0648\u0644\u06cc \uD83D\uDD34 (" + assetFa + ")";
+      trBox.style.color = "#f87171";
+    }
+    document.getElementById("ema-box").innerText = "EMA(" + (d.ema_period || 200) + "): " + (ema ? Number(ema).toFixed(2) : "---");
+    document.getElementById("rsi-box").innerText = "RSI(" + (d.rsi_period || 14) + "): " + (rsi ? Number(rsi).toFixed(1) : "---");
   }
 
   function updateMarket(d) {
@@ -272,9 +280,9 @@
     lastMarketData = d;
     const unit = (d.symbol && d.symbol.includes("VST")) ? " VST" : " USDT";
     document.getElementById("sym").innerText = d.symbol + " (" + d.timeframe + ")";
-    document.getElementById("prc").innerText = "$ " + d.current_price;
-    document.getElementById("gold-prc").innerText = "$ " + (d.gold_price || "---");
-    document.getElementById("oil-prc").innerText = "$ " + (d.oil_price || "---");
+    document.getElementById("prc").innerText = "$ " + Number(d.current_price).toFixed(2);
+    document.getElementById("gold-prc").innerText = d.gold_price ? ("$ " + Number(d.gold_price).toFixed(2)) : "---";
+    document.getElementById("oil-prc").innerText = d.oil_price ? ("$ " + Number(d.oil_price).toFixed(2)) : "---";
     document.getElementById("wallet-bal").innerText = (d.wallet_balance || 0) + unit;
     document.getElementById("vault-bal").innerText = (d.vault_balance || 0) + " $";
     document.getElementById("btc-tr").innerText = d.trend === "BULLISH" ? "UP" : "DOWN";
@@ -315,7 +323,7 @@
     const maxP = Math.max.apply(null, allVals), minP = Math.min.apply(null, allVals), rangeP = (maxP - minP) || 1;
     const toY = p => padT + plotH - ((p - minP) / rangeP) * plotH;
     ctx.strokeStyle = "#334155"; ctx.fillStyle = "#94a3b8"; ctx.font = "11px Tahoma"; ctx.lineWidth = 0.5;
-    for (let g = 0; g <= 5; g++) { const pVal = minP + (rangeP * g / 5), y = toY(pVal); ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke(); ctx.fillText(pVal.toFixed(1), W - padR + 6, y + 4); }
+    for (let g = 0; g <= 5; g++) { const pVal = minP + (rangeP * g / 5), y = toY(pVal); ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke(); ctx.fillText(pVal.toFixed(2), W - padR + 6, y + 4); }
     if (showSup) supsList.forEach(s => { const y = toY(s); ctx.strokeStyle = "#4ade80"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke(); });
     if (showRes) ressList.forEach(r => { const y = toY(r); ctx.strokeStyle = "#f87171"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke(); });
 
@@ -331,7 +339,7 @@
     }
     if (showEma && c.ema) { ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 1.8; ctx.beginPath(); c.ema.forEach((val, i) => { const x = padL + i * step + step / 2, y = toY(val); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }); ctx.stroke(); }
     const curY = toY(activeP); ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, curY); ctx.lineTo(W - padR, curY); ctx.stroke();
-    ctx.fillStyle = "#0284c7"; ctx.fillRect(W - padR + 2, curY - 9, 72, 18); ctx.fillStyle = "#ffffff"; ctx.fillText(activeP, W - padR + 6, curY + 4);
+    ctx.fillStyle = "#0284c7"; ctx.fillRect(W - padR + 2, curY - 9, 72, 18); ctx.fillStyle = "#ffffff"; ctx.fillText(Number(activeP).toFixed(2), W - padR + 6, curY + 4);
 
     const rsiDiv = document.getElementById("rsi-container"); rsiDiv.style.display = showRsi ? "block" : "none";
     if (showRsi && c.rsi) {
