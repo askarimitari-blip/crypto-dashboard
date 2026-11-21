@@ -78,7 +78,7 @@
       <div class="grid-2">
         <div>
           <label>انتخاب بازار و حالت ترید</label>
-          <select id="symbol" class="ltr">
+          <select id="symbol" class="ltr" onchange="onMarketSelectChange()">
             <option value="TRIPLE_USDT" selected>BTC + XAU + OIL سه‌گانه (واقعی USDT)</option>
             <option value="TRIPLE_VST">BTC + XAU + OIL سه‌گانه (دمو VST)</option>
             <option value="DUAL_USDT">BTC + XAU دوتایی (واقعی USDT)</option>
@@ -124,9 +124,9 @@
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
         <h4 style="margin:0; color:#38bdf8;">📈 نمودار کندلی قیمت و اندیکاتورها</h4>
         <div style="display:flex; gap:5px; flex-wrap:wrap;">
-          <button type="button" id="btn-chart-btc" class="tab-btn active" style="padding:6px 10px; min-width:85px;" onclick="setChartAsset('BTC')">₿ بیت‌کوین</button>
-          <button type="button" id="btn-chart-gold" class="tab-btn" style="padding:6px 10px; min-width:85px;" onclick="setChartAsset('GOLD')">🪙 طلا (XAU)</button>
-          <button type="button" id="btn-chart-oil" class="tab-btn" style="padding:6px 10px; min-width:85px;" onclick="setChartAsset('OIL')">🛢️ نفت (WTI)</button>
+          <button type="button" id="btn-chart-btc" class="tab-btn active" style="padding:6px 10px; min-width:85px;" onclick="setChartAsset('BTC', true)">₿ بیت‌کوین</button>
+          <button type="button" id="btn-chart-gold" class="tab-btn" style="padding:6px 10px; min-width:85px;" onclick="setChartAsset('GOLD', true)">🪙 طلا (XAU)</button>
+          <button type="button" id="btn-chart-oil" class="tab-btn" style="padding:6px 10px; min-width:85px;" onclick="setChartAsset('OIL', true)">🛢️ نفت (WTI)</button>
         </div>
       </div>
       <div class="chart-toggles">
@@ -165,7 +165,7 @@
 </div>
 <script>
   const DB_ROOT = "https://" + "mycryptoassistant-29926" + "-default-rtdb." + "firebaseio" + ".com";
-  let globalTrades = [], lastMarketData = null, settingsLoaded = false;
+  let globalTrades = [], lastMarketData = null, lastOpenPos = null, settingsLoaded = false;
   let activeChartAsset = "BTC", userPickedChart = false;
 
   function switchTab(idx) {
@@ -174,13 +174,32 @@
     if (idx === 1 && lastMarketData) setTimeout(redrawChart, 50);
   }
 
-  function setChartAsset(asset) {
+  function getTargetAssetFromMode(modeStr) {
+    if (!modeStr) return "BTC";
+    if (modeStr.includes("WTI") || modeStr.includes("OIL")) return "OIL";
+    if (modeStr.includes("PAXG") || modeStr.includes("XAU")) return "GOLD";
+    if (lastOpenPos && lastOpenPos.status === "OPEN" && lastOpenPos.symbol) {
+      if (lastOpenPos.symbol.includes("WTI") || lastOpenPos.symbol.includes("OIL")) return "OIL";
+      if (lastOpenPos.symbol.includes("PAXG") || lastOpenPos.symbol.includes("XAU")) return "GOLD";
+    }
+    return "BTC";
+  }
+
+  function setChartAsset(asset, manual) {
     activeChartAsset = asset;
-    userPickedChart = true;
+    if (manual) userPickedChart = true;
     document.getElementById("btn-chart-btc").classList.toggle("active", asset === "BTC");
     document.getElementById("btn-chart-gold").classList.toggle("active", asset === "GOLD");
     document.getElementById("btn-chart-oil").classList.toggle("active", asset === "OIL");
+    renderPrimaryStats();
     redrawChart();
+  }
+
+  function onMarketSelectChange() {
+    userPickedChart = false;
+    const selectedMode = document.getElementById("symbol").value;
+    const targetAsset = getTargetAssetFromMode(selectedMode);
+    setChartAsset(targetAsset, false);
   }
 
   function toggleAllocInput() {
@@ -218,7 +237,34 @@
     document.getElementById("risk").value = 2;
     toggleAllocInput();
     toggleVaultInputs();
+    onMarketSelectChange();
     alert("Reset to Standard Defaults. Click Save to apply.");
+  }
+
+  function renderPrimaryStats() {
+    if (!lastMarketData) return;
+    const d = lastMarketData;
+    let tr = d.trend, ema = d.ema_val, rsi = d.rsi_val, sups = d.supports || [], ress = d.resistances || [];
+    if (activeChartAsset === "GOLD") {
+      tr = d.gold_trend || d.trend;
+      ema = d.gold_ema || d.ema_val;
+      rsi = d.gold_rsi || d.rsi_val;
+      sups = d.gold_supports || [];
+      ress = d.gold_resistances || [];
+    } else if (activeChartAsset === "OIL") {
+      tr = d.oil_trend || d.trend;
+      ema = d.oil_ema || d.ema_val;
+      rsi = d.oil_rsi || d.rsi_val;
+      sups = d.oil_supports || [];
+      ress = d.oil_resistances || [];
+    }
+    document.getElementById("sup").innerText = sups.join(" | ") || "---";
+    document.getElementById("res").innerText = ress.join(" | ") || "---";
+    const trBox = document.getElementById("trend-box");
+    if (tr === "BULLISH") { trBox.innerText = "BULLISH (" + activeChartAsset + ")"; trBox.style.color = "#4ade80"; }
+    else if (tr === "BEARISH") { trBox.innerText = "BEARISH (" + activeChartAsset + ")"; trBox.style.color = "#f87171"; }
+    document.getElementById("ema-box").innerText = "EMA(" + (d.ema_period || 200) + "): " + (ema || "---");
+    document.getElementById("rsi-box").innerText = "RSI(" + (d.rsi_period || 14) + "): " + (rsi || "---");
   }
 
   function updateMarket(d) {
@@ -231,16 +277,18 @@
     document.getElementById("oil-prc").innerText = "$ " + (d.oil_price || "---");
     document.getElementById("wallet-bal").innerText = (d.wallet_balance || 0) + unit;
     document.getElementById("vault-bal").innerText = (d.vault_balance || 0) + " $";
-    document.getElementById("sup").innerText = (d.supports || []).join(" | ");
-    document.getElementById("res").innerText = (d.resistances || []).join(" | ");
     document.getElementById("btc-tr").innerText = d.trend === "BULLISH" ? "UP" : "DOWN";
     document.getElementById("gold-tr").innerText = d.gold_trend === "BULLISH" ? "UP" : "DOWN";
     document.getElementById("oil-tr").innerText = d.oil_trend === "BULLISH" ? "UP" : "DOWN";
-    const trBox = document.getElementById("trend-box");
-    if (d.trend === "BULLISH") { trBox.innerText = "BULLISH"; trBox.style.color = "#4ade80"; }
-    else if (d.trend === "BEARISH") { trBox.innerText = "BEARISH"; trBox.style.color = "#f87171"; }
-    document.getElementById("ema-box").innerText = "EMA(" + (d.ema_period || 200) + "): " + (d.ema_val || "---");
-    document.getElementById("rsi-box").innerText = "RSI(" + (d.rsi_period || 14) + "): " + (d.rsi_val || "---");
+
+    if (!userPickedChart) {
+      const target = getTargetAssetFromMode(document.getElementById("symbol").value || d.symbol);
+      activeChartAsset = target;
+      document.getElementById("btn-chart-btc").classList.toggle("active", target === "BTC");
+      document.getElementById("btn-chart-gold").classList.toggle("active", target === "GOLD");
+      document.getElementById("btn-chart-oil").classList.toggle("active", target === "OIL");
+    }
+    renderPrimaryStats();
     if (document.getElementById("tab-1").classList.contains("active")) redrawChart();
   }
   function redrawChart() {
@@ -314,14 +362,11 @@
   function updateExtraTabs(all) {
     if (!all) return;
     const pos = all.open_position, posDiv = document.getElementById("open-pos-body");
+    lastOpenPos = pos;
     if (pos && pos.status === "OPEN") {
       const pnlClass = pos.unrealized_pnl >= 0 ? "pos-green" : "neg-red", pnlSign = pos.unrealized_pnl >= 0 ? "+" : "";
       posDiv.innerHTML = "<div style='display:flex; justify-content:space-between; margin-bottom:8px;'><span>" + pos.symbol + " (" + pos.side + " " + pos.leverage + "x)</span><span class='" + pnlClass + "'>" + pnlSign + pos.unrealized_pnl + " $</span></div><div class='grid-2'><div class='box'>Entry: " + pos.entry_price + "</div><div class='box'>Margin: " + pos.margin + " $</div><div class='box'>TP: " + pos.tp + "</div><div class='box'>SL: " + pos.sl + "</div></div>";
-      if (!userPickedChart) { const a = (pos.symbol.includes("WTI") || pos.symbol.includes("OIL")) ? "OIL" : ((pos.symbol.includes("PAXG") || pos.symbol.includes("XAU")) ? "GOLD" : "BTC"); setChartAsset(a); userPickedChart = false; }
-    } else {
-      posDiv.innerHTML = "No open position.";
-      if (!userPickedChart && all.live_market && all.live_market.symbol) { const sym = all.live_market.symbol, a = (sym.includes("WTI") || sym.includes("OIL")) ? "OIL" : ((sym.includes("PAXG") || sym.includes("XAU")) ? "GOLD" : "BTC"); setChartAsset(a); userPickedChart = false; }
-    }
+    } else { posDiv.innerHTML = "No open position."; }
     if (all.trade_history) { globalTrades = Object.values(all.trade_history).reverse(); document.getElementById("trades-body").innerHTML = globalTrades.map(t => { const w = t.pnl >= 0; return "<tr><td>" + t.time + "</td><td>" + (t.symbol || "BTC") + "</td><td>" + t.side + "</td><td>" + t.invested + "</td><td class='" + (w ? "pos-green" : "neg-red") + "'>" + (w ? "+" : "") + t.pnl + "</td><td style='color:#fbbf24;'>" + (t.vault_saved || 0) + "</td><td><b>" + t.balance_after + "</b></td></tr>"; }).join(""); }
     if (all.missed_signals) { const mList = Object.values(all.missed_signals).reverse(); document.getElementById("missed-body").innerHTML = mList.map(m => { let b = m.outcome === "SUCCESS" ? "<span class='pos-green'>WIN</span>" : (m.outcome === "FAILED" ? "<span class='neg-red'>LOSS</span>" : "PENDING"); return "<tr><td>" + m.time + "</td><td>" + m.symbol + "</td><td>" + m.side + "</td><td style='direction:ltr;'>" + m.entry + "/" + m.sl + "/" + m.tp + "</td><td>" + b + "</td></tr>"; }).join(""); }
   }
@@ -333,7 +378,7 @@
     const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" })); link.download = "Triple_Portfolio_Report.csv"; link.click();
   }
 
-   async function save() {
+  async function save() {
     const data = {
       symbol: document.getElementById("symbol").value,
       timeframe: document.getElementById("timeframe").value,
@@ -364,8 +409,8 @@
       if (!all) return;
       const wBal = all.live_market ? all.live_market.wallet_balance : 0;
       applySettings(all.settings, wBal);
-      updateMarket(all.live_market);
       updateExtraTabs(all);
+      updateMarket(all.live_market);
     } catch (e) {}
   }
 
