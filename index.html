@@ -29,6 +29,7 @@
     .btn-reset { width: 100%; padding: 10px; background: #475569; color: #f8fafc; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 12px; }
     .btn-help { background: #f59e0b; color: #0f172a; border: none; padding: 5px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; }
     .help-box { display: none; background: #0f172a; border: 1px solid #f59e0b; border-radius: 10px; padding: 12px; margin-bottom: 12px; font-size: 12px; line-height: 1.7; }
+    .notif-banner { display: none; background: #1e3a8a; border: 2px solid #38bdf8; color: #f8fafc; padding: 12px; border-radius: 10px; margin-bottom: 12px; font-size: 12px; white-space: pre-line; }
     .btn-excel { background: #16a34a; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; }
     table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; margin-top: 10px; }
     th, td { padding: 8px 4px; border-bottom: 1px solid #334155; }
@@ -43,6 +44,14 @@
 </head>
 <body>
 <div class="container">
+  <div id="live-notif-banner" class="notif-banner">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+      <b id="notif-title" style="color:#38bdf8;">🔔 هشدار جدید</b>
+      <button type="button" onclick="document.getElementById('live-notif-banner').style.display='none'" style="background:#ef4444; color:white; border:none; border-radius:4px; padding:2px 8px; cursor:pointer;">بستن</button>
+    </div>
+    <div id="notif-body"></div>
+  </div>
+
   <div class="tabs">
     <button class="tab-btn active" onclick="switchTab(0)">📊 بازار و تنظیمات</button>
     <button class="tab-btn" onclick="switchTab(1)">📈 نمودار گرافیکی</button>
@@ -61,18 +70,24 @@
 
       <div id="help-panel" class="help-box">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <b style="color:#fbbf24; font-size:13px;">📘 راهنمای رنگ‌بندی هوشمند هشدار ریسک و محدوده مجاز پارامترها</b>
+          <b style="color:#fbbf24; font-size:13px;">📘 راهنمای اهرم هوشمند هر بازار و رنگ‌بندی هشدار ریسک</b>
           <button type="button" onclick="toggleHelp()" style="background:#ef4444; color:white; border:none; border-radius:4px; padding:2px 8px; cursor:pointer;">بستن</button>
         </div>
-        <div style="margin-bottom:6px;">رنگ کادرها به طور خودکار سطح ایمنی تنظیمات شما را نشان می‌دهد: <span style="color:#4ade80;">🟢 سبز = ایمن و استاندارد</span> | <span style="color:#fde047;">🟡 زرد = احتیاط</span> | <span style="color:#fca5a5;">🔴 قرمز = پرریسک</span></div>
+        <div style="margin-bottom:6px;">رنگ کادرها سطح ایمنی تنظیمات شما را نشان می‌دهد: <span style="color:#4ade80;">🟢 سبز = ایمن/استاندارد</span> | <span style="color:#fde047;">🟡 زرد = احتیاط</span> | <span style="color:#fca5a5;">🔴 قرمز = پرریسک</span></div>
         <ul style="margin:0; padding-right:18px;">
-          <li><b>اهرم (Leverage):</b> بازه مجاز <code>1 تا 10</code> (۱ تا ۳ سبز 🟢 | ۴ تا ۵ زرد 🟡 | ۶ تا ۱۰ قرمز 🔴)</li>
+          <li><b>استاندارد ایمن اهرم برای هر دارایی:</b>
+            <ul>
+              <li><b>بیت‌کوین (BTC):</b> بیشترین نقدشوندگی و ساختار تکنیکال منظم‌تر را دارد؛ در سبد سه‌گانه که ریسک بین ۳ بازار پخش می‌شود، استفاده از <b>اهرم 4 یا 5 (پیش‌فرض: 5x)</b> برای بیت‌کوین بازدهی را به شکل چشمگیری بالا می‌برد (سقف تک‌بازار: 10).</li>
+              <li><b>طلای جهانی (XAU/PAXG):</b> نوسانات کنترل‌شده‌تری دارد، اما در اخبار ناگهانی شدو می‌زند؛ استاندارد ایمن آن <b>اهرم 2 تا 3 (پیش‌فرض: 3)</b> است و در سبد ترکیبی روی 3x قفل می‌شود (سقف تک‌بازار: 6).</li>
+              <li><b>نفت خام (WTI):</b> نوسانات موجی و جهش‌های قیمتی بزرگ‌تری دارد؛ استاندارد ایمن و حرفه‌ای آن <b>اهرم 2</b> است و در سبد ترکیبی روی 2x قفل می‌شود (سقف تک‌بازار: 5).</li>
+            </ul>
+          </li>
           <li><b>دوره EMA:</b> بازه مجاز <code>20 تا 300</code> (۱۵۰ تا ۲۵۰ سبز 🟢 | ۵۰ تا ۱۴۹ یا ۲۵۱ تا ۳۰۰ زرد 🟡 | کمتر از ۵۰ قرمز 🔴)</li>
           <li><b>دوره RSI:</b> بازه مجاز <code>5 تا 30</code> (۱۲ تا ۱۶ سبز 🟢 | ۸ تا ۱۱ یا ۱۷ تا ۲۴ زرد 🟡 | خارج از آن قرمز 🔴)</li>
           <li><b>درصد سرمایه (Alloc %):</b> از حداقل الزام صرافی تا <code>100%</code> (تا ۲۰٪ سبز 🟢 | ۲۱٪ تا ۵۰٪ زرد 🟡 | بالای ۵۰٪ قرمز 🔴)</li>
           <li><b>درصد صندوق ذخیره سود:</b> بازه مجاز <code>1% تا 90%</code> (۱۰٪ تا ۳۰٪ سبز 🟢 | ۳۱٪ تا ۵۰٪ زرد 🟡 | خارج از آن قرمز 🔴)</li>
           <li><b>سقف ریسک مجاز (Risk %):</b> بازه مجاز <code>0.5% تا 10%</code> (تا ۲.۵٪ سبز 🟢 | ۲.۶٪ تا ۵٪ زرد 🟡 | بالای ۵٪ قرمز 🔴)</li>
-          <li><b>الزام حداقل حجم صرافی:</b> حداقل ارزش پوزیشن در صرافی ۷۵ دلار است. اگر موجودی کم باشد (مثلاً ۱۰۰ دلار)، درصد سرمایه به صورت خودکار روی حداقل مجاز (مثلاً ۲۵٪ در اهرم ۳) قفل می‌شود تا سفارش رد نشود.</li>
+          <li><b>حالت سبد چنددارایی (TRIPLE / DUAL):</b> مقادیر EMA=200، RSI=14، سقف ریسک و اهرم طلا (3x) و نفت (2x) به صورت خودکار قفل می‌شوند تا استراتژی بهینه بدون خطا اجرا شود.</li>
         </ul>
       </div>
 
@@ -96,9 +111,8 @@
       <h4 style="margin:0 0 8px 0; color:#38bdf8;">⚡ آخرین معامله باز (پوزیشن فعال)</h4>
       <div id="open-pos-body" style="text-align:center; color:#94a3b8; font-size:13px;">در حال حاضر معامله بازی وجود ندارد.</div>
     </div>
-
     <div class="card">
-      <h4 style="margin:0 0 8px 0; color:#38bdf8;">⚙️ تنظیمات بازار، مدیریت سرمایه و صندوق سود</h4>
+      <h4 style="margin:0 0 8px 0; color:#38bdf8;">⚙️ تنظیمات بازار، اهرم هوشمند و صندوق ذخیره سود</h4>
       <div class="grid-2">
         <div>
           <label>انتخاب بازار و حالت ترید</label>
@@ -113,8 +127,15 @@
         </div>
         <div><label>تایم‌فریم</label><select id="timeframe" class="ltr"><option value="15m">15m</option><option value="1h">1h</option><option value="4h" selected>4h</option><option value="1d">1d</option></select></div>
       </div>
+
+      <div id="multi-lev-box" class="box" style="margin-top:8px; border:1px solid #334155; text-align:right;">
+        <div style="color:#38bdf8; font-weight:bold; margin-bottom:4px;">⚖️ اهرم هوشمند سبد ترکیبی: طلا روی 3x و نفت روی 2x قفل است</div>
+        <label style="margin-top:2px;">اهرم هوشمند بیت‌کوین در سبد ترکیبی (پیشنهاد استاندارد: 4 یا 5)</label>
+        <input id="btc_multi_lev" class="ltr" type="number" value="5" min="1" max="10" onchange="enforceAllRules()">
+      </div>
+
       <div class="grid-3">
-        <div><label>اهرم (۱ تا ۱۰)</label><input id="leverage" class="ltr" type="number" value="3" min="1" max="10" onchange="enforceAllRules()"></div>
+        <div><label id="lev-label">اهرم تک‌بازار</label><input id="leverage" class="ltr" type="number" value="3" min="1" max="10" onchange="enforceAllRules()"></div>
         <div><label>دوره EMA (۲۰ تا ۳۰۰)</label><input id="ema_period" class="ltr" type="number" value="200" min="20" max="300" onchange="enforceAllRules()"></div>
         <div><label>دوره RSI (۵ تا ۳۰)</label><input id="rsi_period" class="ltr" type="number" value="14" min="5" max="30" onchange="enforceAllRules()"></div>
       </div>
@@ -135,8 +156,38 @@
       </div>
       <div class="grid-2">
         <div><label>سقف ریسک مجاز (۰.۵ تا ۱۰٪)</label><input id="risk" class="ltr" type="number" value="2" min="0.5" max="10" step="0.5" onchange="enforceAllRules()"></div>
-        <div><label>معامله خودکار</label><select id="auto"><option value="false">خاموش (فقط هشدار)</option><option value="true">روشن (اجرای خودکار)</option></select></div>
+        <div><label>معامله خودکار</label><select id="auto"><option value="false">خاموش (فقط هشدار و پیشنهاد)</option><option value="true">روشن (اجرای خودکار)</option></select></div>
       </div>
+
+      <h4 style="margin:14px 0 6px 0; color:#fbbf24;">🔔 تنظیمات هشدار، زنگ صوتی و گزارش تلگرام</h4>
+      <div class="grid-3">
+        <div>
+          <label>زنگ صوتی و اعلان مرورگر</label>
+          <select id="sound_enabled" onchange="requestNotifPerm()">
+            <option value="true" selected>روشن (پخش زنگ)</option>
+            <option value="false">خاموش</option>
+          </select>
+        </div>
+        <div>
+          <label>هشدار موقعیت از دست رفته</label>
+          <select id="missed_alert">
+            <option value="true" selected>روشن (اعلام فرصت‌ها)</option>
+            <option value="false">خاموش</option>
+          </select>
+        </div>
+        <div>
+          <label>ارسال گزارش به تلگرام</label>
+          <select id="tg_enabled">
+            <option value="false" selected>خاموش</option>
+            <option value="true">روشن</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div><label>توکن ربات تلگرام (Bot Token)</label><input id="tg_token" class="ltr" type="password" placeholder="123456:ABC-DEF..."></div>
+        <div><label>شناسه عددی چت تلگرام (Chat ID)</label><input id="tg_chat_id" class="ltr" type="text" placeholder="123456789"></div>
+      </div>
+
       <label>کلید API صرافی BingX</label><input id="api_key" class="ltr" type="password" placeholder="API Key">
       <label>کلید Secret صرافی BingX</label><input id="api_secret" class="ltr" type="password" placeholder="Secret Key">
       <button class="btn-primary" onclick="save()">💾 ذخیره و اعمال تنظیمات</button>
@@ -190,11 +241,35 @@
 <script>
   const GSHEET_URL = "https://script.google.com/macros/s/AKfycbydFBPW-R9L_9Ic4W1gaNvH2RLLiptT5p1aTKgfT8W4AbB2Z828ZOh0iImi-fAZ2AXz_g/exec";
   let globalTrades = [], lastMarketData = null, lastOpenPos = null, settingsLoaded = false;
-  let activeChartAsset = "BTC", userPickedChart = false;
+  let activeChartAsset = "BTC", userPickedChart = false, lastNotifId = localStorage.getItem("lastNotifId") || "";
 
   function toggleHelp() {
     const hp = document.getElementById("help-panel");
     hp.style.display = (hp.style.display === "block") ? "none" : "block";
+  }
+
+  function requestNotifPerm() {
+    if (document.getElementById("sound_enabled").value === "true" && "Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }
+
+  function playAlertBell(title, body) {
+    if (document.getElementById("sound_enabled").value !== "true") return;
+    document.getElementById("notif-title").innerText = "🔔 " + title;
+    document.getElementById("notif-body").innerText = body;
+    document.getElementById("live-notif-banner").style.display = "block";
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.type = "sine"; osc.frequency.setValueAtTime(880, ctx.currentTime);
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.45);
+    } catch (e) {}
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification(title, { body: body });
+    }
   }
 
   function switchTab(idx) {
@@ -218,51 +293,87 @@
   }
 
   function enforceAllRules() {
+    const mode = document.getElementById("symbol").value;
+    const isMulti = mode.startsWith("TRIPLE") || mode.startsWith("DUAL");
+    const isOil = mode.includes("WTI") || mode.includes("OIL");
+    const isGold = mode.includes("PAXG") || mode.includes("XAU");
+
+    document.getElementById("multi-lev-box").style.display = isMulti ? "block" : "none";
+    const mLevEl = document.getElementById("btc_multi_lev");
+    const mLev = clampVal(mLevEl, 1, 10);
+    setZoneColor(mLevEl, (mLev >= 4 && mLev <= 5) ? "green" : (mLev <= 3 ? "yellow" : "red"));
+
     const levEl = document.getElementById("leverage");
-    const lev = clampVal(levEl, 1, 10);
-    setZoneColor(levEl, lev <= 3 ? "green" : (lev <= 5 ? "yellow" : "red"));
+    const levLbl = document.getElementById("lev-label");
+    let effectiveLev = 3;
+
+    if (isMulti) {
+      levEl.disabled = true; levEl.style.opacity = "0.4";
+      levLbl.innerText = "اهرم تک‌بازار (قفل در سبد ترکیبی)";
+      effectiveLev = 3;
+    } else {
+      levEl.disabled = false; levEl.style.opacity = "1";
+      if (isOil) {
+        levLbl.innerText = "اهرم نفت (۱ تا ۵ | ایمن: ۲)";
+        const v = clampVal(levEl, 1, 5);
+        setZoneColor(levEl, v <= 2 ? "green" : (v === 3 ? "yellow" : "red"));
+        effectiveLev = v;
+      } else if (isGold) {
+        levLbl.innerText = "اهرم طلا (۱ تا ۶ | ایمن: ۲ تا ۳)";
+        const v = clampVal(levEl, 1, 6);
+        setZoneColor(levEl, v <= 3 ? "green" : (v === 4 ? "yellow" : "red"));
+        effectiveLev = v;
+      } else {
+        levLbl.innerText = "اهرم بیت‌کوین (۱ تا ۱۰ | استاندارد: ۴ تا ۵)";
+        const v = clampVal(levEl, 1, 10);
+        setZoneColor(levEl, v <= 5 ? "green" : (v <= 7 ? "yellow" : "red"));
+        effectiveLev = v;
+      }
+    }
 
     const emaEl = document.getElementById("ema_period");
-    const ema = clampVal(emaEl, 20, 300);
-    setZoneColor(emaEl, (ema >= 150 && ema <= 250) ? "green" : (ema >= 50 ? "yellow" : "red"));
-
     const rsiEl = document.getElementById("rsi_period");
-    const rsi = clampVal(rsiEl, 5, 30);
-    setZoneColor(rsiEl, (rsi >= 12 && rsi <= 16) ? "green" : ((rsi >= 8 && rsi <= 24) ? "yellow" : "red"));
+    const rkEl = document.getElementById("risk");
+
+    if (isMulti) {
+      emaEl.value = 200; emaEl.disabled = true; emaEl.style.opacity = "0.4"; setZoneColor(emaEl, "green");
+      rsiEl.value = 14; rsiEl.disabled = true; rsiEl.style.opacity = "0.4"; setZoneColor(rsiEl, "green");
+      rkEl.disabled = true; rkEl.style.opacity = "0.4"; setZoneColor(rkEl, "green");
+    } else {
+      emaEl.disabled = false; emaEl.style.opacity = "1";
+      const ema = clampVal(emaEl, 20, 300);
+      setZoneColor(emaEl, (ema >= 150 && ema <= 250) ? "green" : (ema >= 50 ? "yellow" : "red"));
+
+      rsiEl.disabled = false; rsiEl.style.opacity = "1";
+      const rsi = clampVal(rsiEl, 5, 30);
+      setZoneColor(rsiEl, (rsi >= 12 && rsi <= 16) ? "green" : ((rsi >= 8 && rsi <= 24) ? "yellow" : "red"));
+
+      rkEl.disabled = false; rkEl.style.opacity = "1";
+      const rk = clampVal(rkEl, 0.5, 10);
+      setZoneColor(rkEl, rk <= 2.5 ? "green" : (rk <= 5 ? "yellow" : "red"));
+    }
 
     const vpEl = document.getElementById("vault_percent");
     const vp = clampVal(vpEl, 1, 90);
     setZoneColor(vpEl, (vp >= 10 && vp <= 30) ? "green" : ((vp >= 5 && vp <= 50) ? "yellow" : "red"));
 
-    const rkEl = document.getElementById("risk");
-    const rk = clampVal(rkEl, 0.5, 10);
-    setZoneColor(rkEl, rk <= 2.5 ? "green" : (rk <= 5 ? "yellow" : "red"));
-
     const allocMode = document.getElementById("alloc_mode").value;
     const allocEl = document.getElementById("alloc_value");
     const wBal = (lastMarketData && lastMarketData.wallet_balance > 0) ? lastMarketData.wallet_balance : 1000;
     const minNotional = (lastMarketData && lastMarketData.min_notional) ? lastMarketData.min_notional : 75;
-    const minMargin = minNotional / lev;
+    const minMargin = minNotional / (isMulti ? 2 : effectiveLev);
 
     if (allocMode === "percent") {
       let minPct = Math.min(100, Math.ceil((minMargin / wBal) * 100));
       if (minPct < 1) minPct = 1;
-      allocEl.min = minPct;
-      allocEl.max = 100;
+      allocEl.min = minPct; allocEl.max = 100;
       const curPct = clampVal(allocEl, minPct, 100);
-      if (minPct >= 98) {
-        allocEl.value = 100;
-        allocEl.disabled = true;
-        allocEl.style.opacity = "0.5";
-      } else {
-        allocEl.disabled = false;
-        allocEl.style.opacity = "1";
-      }
+      allocEl.disabled = (minPct >= 98);
+      allocEl.style.opacity = (minPct >= 98) ? "0.5" : "1";
       setZoneColor(allocEl, curPct <= 20 ? "green" : (curPct <= 50 ? "yellow" : "red"));
     } else if (allocMode === "fixed") {
       const minFix = Math.min(wBal, Math.ceil(minMargin));
-      allocEl.min = minFix;
-      allocEl.max = wBal;
+      allocEl.min = minFix; allocEl.max = wBal;
       const curFix = clampVal(allocEl, minFix, wBal);
       allocEl.disabled = (minFix >= wBal);
       allocEl.style.opacity = (minFix >= wBal) ? "0.5" : "1";
@@ -292,19 +403,14 @@
     redrawChart();
   }
 
-  function toggleRiskInput() {
-    const mode = document.getElementById("symbol").value;
-    const isMulti = mode.startsWith("TRIPLE") || mode.startsWith("DUAL");
-    const riskInp = document.getElementById("risk");
-    riskInp.disabled = isMulti;
-    riskInp.style.opacity = isMulti ? "0.4" : "1";
-  }
-
   function onMarketSelectChange() {
     userPickedChart = false;
     const selectedMode = document.getElementById("symbol").value;
+    if (selectedMode.includes("WTI") || selectedMode.includes("OIL")) document.getElementById("leverage").value = 2;
+    else if (selectedMode.includes("PAXG") || selectedMode.includes("XAU")) document.getElementById("leverage").value = 3;
+    else if (selectedMode.includes("BTC")) document.getElementById("leverage").value = 5;
     setChartAsset(getTargetAssetFromMode(selectedMode), false);
-    toggleRiskInput();
+    enforceAllRules();
   }
 
   function toggleAllocInput() {
@@ -322,15 +428,14 @@
     const isEnabled = document.getElementById("vault_enabled").value === "true";
     const baseInp = document.getElementById("base_capital");
     const pctInp = document.getElementById("vault_percent");
-    baseInp.disabled = !isEnabled;
-    pctInp.disabled = !isEnabled;
-    baseInp.style.opacity = isEnabled ? "1" : "0.4";
-    pctInp.style.opacity = isEnabled ? "1" : "0.4";
+    baseInp.disabled = !isEnabled; pctInp.disabled = !isEnabled;
+    baseInp.style.opacity = isEnabled ? "1" : "0.4"; pctInp.style.opacity = isEnabled ? "1" : "0.4";
   }
 
   function resetDefaults() {
     document.getElementById("symbol").value = "TRIPLE_USDT";
     document.getElementById("timeframe").value = "4h";
+    document.getElementById("btc_multi_lev").value = 5;
     document.getElementById("leverage").value = 3;
     document.getElementById("ema_period").value = 200;
     document.getElementById("rsi_period").value = 14;
@@ -340,10 +445,7 @@
     document.getElementById("base_capital").value = 1000;
     document.getElementById("vault_percent").value = 10;
     document.getElementById("risk").value = 2;
-    toggleAllocInput();
-    toggleVaultInputs();
-    onMarketSelectChange();
-    enforceAllRules();
+    toggleAllocInput(); toggleVaultInputs(); onMarketSelectChange();
     alert("Reset to Standard Defaults. Click Save to apply.");
   }
   function renderPrimaryStats() {
@@ -388,7 +490,6 @@
       document.getElementById("btn-chart-gold").classList.toggle("active", target === "GOLD");
       document.getElementById("btn-chart-oil").classList.toggle("active", target === "OIL");
     }
-    toggleRiskInput();
     enforceAllRules();
     renderPrimaryStats();
     if (document.getElementById("tab-1").classList.contains("active")) redrawChart();
@@ -449,17 +550,30 @@
     if (!s || settingsLoaded) return;
     if (s.symbol) document.getElementById("symbol").value = s.symbol;
     if (s.timeframe) document.getElementById("timeframe").value = s.timeframe;
-    document.getElementById("leverage").value = s.leverage || 3; document.getElementById("ema_period").value = s.ema_period || 200; document.getElementById("rsi_period").value = s.rsi_period || 14;
+    document.getElementById("btc_multi_lev").value = s.btc_multi_lev || 5;
+    document.getElementById("leverage").value = s.leverage || 3;
+    document.getElementById("ema_period").value = s.ema_period || 200;
+    document.getElementById("rsi_period").value = s.rsi_period || 14;
     if (s.alloc_mode) document.getElementById("alloc_mode").value = s.alloc_mode;
     if (s.alloc_value) document.getElementById("alloc_value").value = s.alloc_value;
     document.getElementById("vault_enabled").value = String(s.vault_enabled !== false);
     const defaultBase = (walletBal && walletBal > 0) ? Math.min(1000, walletBal) : 1000;
-    document.getElementById("base_capital").value = s.base_capital || defaultBase; document.getElementById("vault_percent").value = s.vault_percent || 10;
+    document.getElementById("base_capital").value = s.base_capital || defaultBase;
+    document.getElementById("vault_percent").value = s.vault_percent || 10;
     if (s.risk_percent) document.getElementById("risk").value = s.risk_percent;
     document.getElementById("auto").value = String(s.auto_trade || false);
+    document.getElementById("sound_enabled").value = String(s.sound_enabled !== false);
+    document.getElementById("missed_alert").value = String(s.missed_alert !== false);
+    document.getElementById("tg_enabled").value = String(s.tg_enabled || false);
+    if (s.tg_token) document.getElementById("tg_token").value = s.tg_token;
+    if (s.tg_token) document.getElementById("tg_token").value = s.tg_token;
+    if (s.tg_chat_id) document.getElementById("tg_chat_id").value = s.tg_chat_id;
     if (s.api_key) document.getElementById("api_key").value = s.api_key;
     if (s.api_secret) document.getElementById("api_secret").value = s.api_secret;
-    toggleAllocInput(); toggleVaultInputs(); toggleRiskInput(); enforceAllRules(); settingsLoaded = true;
+    toggleAllocInput();
+    toggleVaultInputs();
+    enforceAllRules();
+    settingsLoaded = true;
   }
 
   function updateExtraTabs(all) {
@@ -486,6 +600,11 @@
         return "<tr><td>" + m.time + "</td><td>" + m.symbol + "</td><td>" + m.side + "</td><td style='direction:ltr;'>" + m.entry + "/" + m.sl + "/" + m.tp + "</td><td>" + b + "</td></tr>";
       }).join("");
     }
+    if (all.last_notif && all.last_notif.id && all.last_notif.id !== lastNotifId) {
+      lastNotifId = all.last_notif.id;
+      localStorage.setItem("lastNotifId", lastNotifId);
+      playAlertBell(all.last_notif.title, all.last_notif.body);
+    }
   }
 
   function exportExcel() {
@@ -505,6 +624,7 @@
     const data = {
       symbol: document.getElementById("symbol").value,
       timeframe: document.getElementById("timeframe").value,
+      btc_multi_lev: Number(document.getElementById("btc_multi_lev").value),
       leverage: Number(document.getElementById("leverage").value),
       ema_period: Number(document.getElementById("ema_period").value),
       rsi_period: Number(document.getElementById("rsi_period").value),
@@ -515,6 +635,11 @@
       vault_percent: Number(document.getElementById("vault_percent").value),
       risk_percent: Number(document.getElementById("risk").value),
       auto_trade: document.getElementById("auto").value === "true",
+      sound_enabled: document.getElementById("sound_enabled").value === "true",
+      missed_alert: document.getElementById("missed_alert").value === "true",
+      tg_enabled: document.getElementById("tg_enabled").value === "true",
+      tg_token: document.getElementById("tg_token").value.trim(),
+      tg_chat_id: document.getElementById("tg_chat_id").value.trim(),
       api_key: document.getElementById("api_key").value.trim(),
       api_secret: document.getElementById("api_secret").value.trim()
     };
