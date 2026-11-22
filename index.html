@@ -8,7 +8,7 @@
     body { font-family: Tahoma, sans-serif; background: #0f172a; color: #f8fafc; padding: 12px; margin: 0; }
     .container { max-width: 820px; margin: 0 auto; }
     .tabs { display: flex; gap: 5px; margin-bottom: 14px; flex-wrap: wrap; }
-    .tab-btn { flex: 1; min-width: 100px; padding: 10px 6px; background: #1e293b; color: #94a3b8; border: 1px solid #334155; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 11px; }
+    .tab-btn { flex: 1; min-width: 95px; padding: 10px 6px; background: #1e293b; color: #94a3b8; border: 1px solid #334155; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 11px; }
     .tab-btn.active { background: #0284c7; color: white; border-color: #0284c7; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
@@ -20,10 +20,15 @@
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
     .box { background: #0f172a; padding: 10px; border-radius: 8px; text-align: center; font-size: 12px; }
     label { display: block; font-size: 12px; color: #94a3b8; margin-top: 8px; }
-    input, select { width: 100%; padding: 9px; margin-top: 4px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; box-sizing: border-box; }
+    input, select { width: 100%; padding: 9px; margin-top: 4px; border-radius: 8px; border: 2px solid #475569; background: #0f172a; color: white; box-sizing: border-box; font-weight: bold; transition: 0.2s; }
+    .zone-green { border-color: #22c55e !important; color: #4ade80 !important; background: #052e16 !important; }
+    .zone-yellow { border-color: #eab308 !important; color: #fde047 !important; background: #422006 !important; }
+    .zone-red { border-color: #ef4444 !important; color: #fca5a5 !important; background: #450a0a !important; }
     .ltr { direction: ltr; text-align: left; }
     .btn-primary { width: 100%; padding: 12px; background: #0284c7; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 14px; }
     .btn-reset { width: 100%; padding: 10px; background: #475569; color: #f8fafc; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 12px; }
+    .btn-help { background: #f59e0b; color: #0f172a; border: none; padding: 5px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; }
+    .help-box { display: none; background: #0f172a; border: 1px solid #f59e0b; border-radius: 10px; padding: 12px; margin-bottom: 12px; font-size: 12px; line-height: 1.7; }
     .btn-excel { background: #16a34a; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; }
     table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; margin-top: 10px; }
     th, td { padding: 8px 4px; border-bottom: 1px solid #334155; }
@@ -51,7 +56,26 @@
         <span>💰 موجودی فعال: <b id="wallet-bal" style="color:#4ade80; direction:ltr;">0.00</b></span>
         <span>🏦 صندوق ذخیره سود: <b id="vault-bal" style="color:#fbbf24; direction:ltr;">0.00 $</b></span>
         <span id="sym" style="color:#38bdf8; font-weight:bold;">در حال اتصال...</span>
+        <button type="button" class="btn-help" onclick="toggleHelp()">❓ راهنما (Help)</button>
       </div>
+
+      <div id="help-panel" class="help-box">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <b style="color:#fbbf24; font-size:13px;">📘 راهنمای رنگ‌بندی هوشمند هشدار ریسک و محدوده مجاز پارامترها</b>
+          <button type="button" onclick="toggleHelp()" style="background:#ef4444; color:white; border:none; border-radius:4px; padding:2px 8px; cursor:pointer;">بستن</button>
+        </div>
+        <div style="margin-bottom:6px;">رنگ کادرها به طور خودکار سطح ایمنی تنظیمات شما را نشان می‌دهد: <span style="color:#4ade80;">🟢 سبز = ایمن و استاندارد</span> | <span style="color:#fde047;">🟡 زرد = احتیاط</span> | <span style="color:#fca5a5;">🔴 قرمز = پرریسک</span></div>
+        <ul style="margin:0; padding-right:18px;">
+          <li><b>اهرم (Leverage):</b> بازه مجاز <code>1 تا 10</code> (۱ تا ۳ سبز 🟢 | ۴ تا ۵ زرد 🟡 | ۶ تا ۱۰ قرمز 🔴)</li>
+          <li><b>دوره EMA:</b> بازه مجاز <code>20 تا 300</code> (۱۵۰ تا ۲۵۰ سبز 🟢 | ۵۰ تا ۱۴۹ یا ۲۵۱ تا ۳۰۰ زرد 🟡 | کمتر از ۵۰ قرمز 🔴)</li>
+          <li><b>دوره RSI:</b> بازه مجاز <code>5 تا 30</code> (۱۲ تا ۱۶ سبز 🟢 | ۸ تا ۱۱ یا ۱۷ تا ۲۴ زرد 🟡 | خارج از آن قرمز 🔴)</li>
+          <li><b>درصد سرمایه (Alloc %):</b> از حداقل الزام صرافی تا <code>100%</code> (تا ۲۰٪ سبز 🟢 | ۲۱٪ تا ۵۰٪ زرد 🟡 | بالای ۵۰٪ قرمز 🔴)</li>
+          <li><b>درصد صندوق ذخیره سود:</b> بازه مجاز <code>1% تا 90%</code> (۱۰٪ تا ۳۰٪ سبز 🟢 | ۳۱٪ تا ۵۰٪ زرد 🟡 | خارج از آن قرمز 🔴)</li>
+          <li><b>سقف ریسک مجاز (Risk %):</b> بازه مجاز <code>0.5% تا 10%</code> (تا ۲.۵٪ سبز 🟢 | ۲.۶٪ تا ۵٪ زرد 🟡 | بالای ۵٪ قرمز 🔴)</li>
+          <li><b>الزام حداقل حجم صرافی:</b> حداقل ارزش پوزیشن در صرافی ۷۵ دلار است. اگر موجودی کم باشد (مثلاً ۱۰۰ دلار)، درصد سرمایه به صورت خودکار روی حداقل مجاز (مثلاً ۲۵٪ در اهرم ۳) قفل می‌شود تا سفارش رد نشود.</li>
+        </ul>
+      </div>
+
       <div class="grid-3" style="margin-bottom:10px;">
         <div class="box"><div style="color:#94a3b8;">₿ بیت‌کوین <span id="btc-tr">---</span></div><div class="price" id="prc">---</div></div>
         <div class="box"><div style="color:#94a3b8;">🪙 طلا (XAU) <span id="gold-tr">---</span></div><div class="gold-price" id="gold-prc">---</div></div>
@@ -90,13 +114,13 @@
         <div><label>تایم‌فریم</label><select id="timeframe" class="ltr"><option value="15m">15m</option><option value="1h">1h</option><option value="4h" selected>4h</option><option value="1d">1d</option></select></div>
       </div>
       <div class="grid-3">
-        <div><label>اهرم (ایمن: 3)</label><input id="leverage" class="ltr" type="number" value="3" min="1" max="50"></div>
-        <div><label>دوره EMA</label><input id="ema_period" class="ltr" type="number" value="200"></div>
-        <div><label>دوره RSI</label><input id="rsi_period" class="ltr" type="number" value="14"></div>
+        <div><label>اهرم (۱ تا ۱۰)</label><input id="leverage" class="ltr" type="number" value="3" min="1" max="10" onchange="enforceAllRules()"></div>
+        <div><label>دوره EMA (۲۰ تا ۳۰۰)</label><input id="ema_period" class="ltr" type="number" value="200" min="20" max="300" onchange="enforceAllRules()"></div>
+        <div><label>دوره RSI (۵ تا ۳۰)</label><input id="rsi_period" class="ltr" type="number" value="14" min="5" max="30" onchange="enforceAllRules()"></div>
       </div>
       <div class="grid-2">
-        <div><label>نحوه ورود سرمایه در هر معامله</label><select id="alloc_mode" onchange="toggleAllocInput()"><option value="percent">درصدی از موجودی صرافی (%)</option><option value="fixed">مبلغ ثابت دلاری دستی ($)</option><option value="all">کل موجودی صرافی (All-In)</option></select></div>
-        <div id="alloc-val-box"><label id="alloc-val-label">مقدار درصد سرمایه (%)</label><input id="alloc_value" class="ltr" type="number" value="10"></div>
+        <div><label>نحوه ورود سرمایه در هر معامله</label><select id="alloc_mode" onchange="toggleAllocInput(); enforceAllRules();"><option value="percent">درصدی از موجودی صرافی (%)</option><option value="fixed">مبلغ ثابت دلاری دستی ($)</option><option value="all">کل موجودی صرافی (All-In)</option></select></div>
+        <div id="alloc-val-box"><label id="alloc-val-label">مقدار درصد سرمایه (%)</label><input id="alloc_value" class="ltr" type="number" value="10" min="1" max="100" onchange="enforceAllRules()"></div>
       </div>
       <div class="grid-3">
         <div>
@@ -106,11 +130,11 @@
             <option value="false">غیرفعال (مرکب)</option>
           </select>
         </div>
-        <div><label>سرمایه پایه صندوق ($)</label><input id="base_capital" class="ltr" type="number" value="1000"></div>
-        <div><label>درصد سود به صندوق (%)</label><input id="vault_percent" class="ltr" type="number" value="10" min="1" max="90"></div>
+        <div><label>سرمایه پایه صندوق ($)</label><input id="base_capital" class="ltr" type="number" value="1000" min="10"></div>
+        <div><label>درصد سود به صندوق (۱ تا ۹۰٪)</label><input id="vault_percent" class="ltr" type="number" value="10" min="1" max="90" onchange="enforceAllRules()"></div>
       </div>
       <div class="grid-2">
-        <div><label>سقف ریسک مجاز هوشمند (%)</label><input id="risk" class="ltr" type="number" value="2" step="0.5"></div>
+        <div><label>سقف ریسک مجاز (۰.۵ تا ۱۰٪)</label><input id="risk" class="ltr" type="number" value="2" min="0.5" max="10" step="0.5" onchange="enforceAllRules()"></div>
         <div><label>معامله خودکار</label><select id="auto"><option value="false">خاموش (فقط هشدار)</option><option value="true">روشن (اجرای خودکار)</option></select></div>
       </div>
       <label>کلید API صرافی BingX</label><input id="api_key" class="ltr" type="password" placeholder="API Key">
@@ -164,14 +188,87 @@
   </div>
 </div>
 <script>
-  const DB_ROOT = "https://" + "mycryptoassistant-29926" + "-default-rtdb." + "firebaseio" + ".com";
+  const GSHEET_URL = "https://script.google.com/macros/s/AKfycbydFBPW-R9L_9Ic4W1gaNvH2RLLiptT5p1aTKgfT8W4AbB2Z828ZOh0iImi-fAZ2AXz_g/exec";
   let globalTrades = [], lastMarketData = null, lastOpenPos = null, settingsLoaded = false;
   let activeChartAsset = "BTC", userPickedChart = false;
+
+  function toggleHelp() {
+    const hp = document.getElementById("help-panel");
+    hp.style.display = (hp.style.display === "block") ? "none" : "block";
+  }
 
   function switchTab(idx) {
     document.querySelectorAll('.tabs .tab-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
     document.querySelectorAll('.tab-content').forEach((c, i) => c.classList.toggle('active', i === idx));
     if (idx === 1 && lastMarketData) setTimeout(redrawChart, 50);
+  }
+
+  function setZoneColor(el, zone) {
+    el.classList.remove("zone-green", "zone-yellow", "zone-red");
+    el.classList.add("zone-" + zone);
+  }
+
+  function clampVal(el, minV, maxV) {
+    let v = parseFloat(el.value);
+    if (isNaN(v)) v = minV;
+    if (v < minV) v = minV;
+    if (v > maxV) v = maxV;
+    el.value = v;
+    return v;
+  }
+
+  function enforceAllRules() {
+    const levEl = document.getElementById("leverage");
+    const lev = clampVal(levEl, 1, 10);
+    setZoneColor(levEl, lev <= 3 ? "green" : (lev <= 5 ? "yellow" : "red"));
+
+    const emaEl = document.getElementById("ema_period");
+    const ema = clampVal(emaEl, 20, 300);
+    setZoneColor(emaEl, (ema >= 150 && ema <= 250) ? "green" : (ema >= 50 ? "yellow" : "red"));
+
+    const rsiEl = document.getElementById("rsi_period");
+    const rsi = clampVal(rsiEl, 5, 30);
+    setZoneColor(rsiEl, (rsi >= 12 && rsi <= 16) ? "green" : ((rsi >= 8 && rsi <= 24) ? "yellow" : "red"));
+
+    const vpEl = document.getElementById("vault_percent");
+    const vp = clampVal(vpEl, 1, 90);
+    setZoneColor(vpEl, (vp >= 10 && vp <= 30) ? "green" : ((vp >= 5 && vp <= 50) ? "yellow" : "red"));
+
+    const rkEl = document.getElementById("risk");
+    const rk = clampVal(rkEl, 0.5, 10);
+    setZoneColor(rkEl, rk <= 2.5 ? "green" : (rk <= 5 ? "yellow" : "red"));
+
+    const allocMode = document.getElementById("alloc_mode").value;
+    const allocEl = document.getElementById("alloc_value");
+    const wBal = (lastMarketData && lastMarketData.wallet_balance > 0) ? lastMarketData.wallet_balance : 1000;
+    const minNotional = (lastMarketData && lastMarketData.min_notional) ? lastMarketData.min_notional : 75;
+    const minMargin = minNotional / lev;
+
+    if (allocMode === "percent") {
+      let minPct = Math.min(100, Math.ceil((minMargin / wBal) * 100));
+      if (minPct < 1) minPct = 1;
+      allocEl.min = minPct;
+      allocEl.max = 100;
+      const curPct = clampVal(allocEl, minPct, 100);
+      if (minPct >= 98) {
+        allocEl.value = 100;
+        allocEl.disabled = true;
+        allocEl.style.opacity = "0.5";
+      } else {
+        allocEl.disabled = false;
+        allocEl.style.opacity = "1";
+      }
+      setZoneColor(allocEl, curPct <= 20 ? "green" : (curPct <= 50 ? "yellow" : "red"));
+    } else if (allocMode === "fixed") {
+      const minFix = Math.min(wBal, Math.ceil(minMargin));
+      allocEl.min = minFix;
+      allocEl.max = wBal;
+      const curFix = clampVal(allocEl, minFix, wBal);
+      allocEl.disabled = (minFix >= wBal);
+      allocEl.style.opacity = (minFix >= wBal) ? "0.5" : "1";
+      const eqPct = (curFix / wBal) * 100;
+      setZoneColor(allocEl, eqPct <= 20 ? "green" : (eqPct <= 50 ? "yellow" : "red"));
+    }
   }
 
   function getTargetAssetFromMode(modeStr) {
@@ -206,8 +303,7 @@
   function onMarketSelectChange() {
     userPickedChart = false;
     const selectedMode = document.getElementById("symbol").value;
-    const targetAsset = getTargetAssetFromMode(selectedMode);
-    setChartAsset(targetAsset, false);
+    setChartAsset(getTargetAssetFromMode(selectedMode), false);
     toggleRiskInput();
   }
 
@@ -247,39 +343,26 @@
     toggleAllocInput();
     toggleVaultInputs();
     onMarketSelectChange();
+    enforceAllRules();
     alert("Reset to Standard Defaults. Click Save to apply.");
   }
-
   function renderPrimaryStats() {
     if (!lastMarketData) return;
     const d = lastMarketData;
     let tr = d.trend, ema = d.ema_val, rsi = d.rsi_val, sups = d.supports || [], ress = d.resistances || [];
     let assetFa = "\u0628\u06cc\u062a\u200c\u06a9\u0648\u06cc\u0646";
     if (activeChartAsset === "GOLD") {
-      tr = d.gold_trend || d.trend;
-      ema = d.gold_ema || d.ema_val;
-      rsi = d.gold_rsi || d.rsi_val;
-      sups = d.gold_supports || [];
-      ress = d.gold_resistances || [];
-      assetFa = "\u0637\u0644\u0627";
+      tr = d.gold_trend || d.trend; ema = d.gold_ema || d.ema_val; rsi = d.gold_rsi || d.rsi_val;
+      sups = d.gold_supports || []; ress = d.gold_resistances || []; assetFa = "\u0637\u0644\u0627";
     } else if (activeChartAsset === "OIL") {
-      tr = d.oil_trend || d.trend;
-      ema = d.oil_ema || d.ema_val;
-      rsi = d.oil_rsi || d.rsi_val;
-      sups = d.oil_supports || [];
-      ress = d.oil_resistances || [];
-      assetFa = "\u0646\u0641\u062a";
+      tr = d.oil_trend || d.trend; ema = d.oil_ema || d.ema_val; rsi = d.oil_rsi || d.rsi_val;
+      sups = d.oil_supports || []; ress = d.oil_resistances || []; assetFa = "\u0646\u0641\u062a";
     }
     document.getElementById("sup").innerText = sups.map(x => Number(x).toFixed(2)).join(" | ") || "---";
     document.getElementById("res").innerText = ress.map(x => Number(x).toFixed(2)).join(" | ") || "---";
     const trBox = document.getElementById("trend-box");
-    if (tr === "BULLISH") {
-      trBox.innerText = "\u0635\u0639\u0648\u062f\u06cc \uD83D\uDFE2 (" + assetFa + ")";
-      trBox.style.color = "#4ade80";
-    } else if (tr === "BEARISH") {
-      trBox.innerText = "\u0646\u0632\u0648\u0644\u06cc \uD83D\uDD34 (" + assetFa + ")";
-      trBox.style.color = "#f87171";
-    }
+    if (tr === "BULLISH") { trBox.innerText = "\u0635\u0639\u0648\u062f\u06cc \uD83D\uDFE2 (" + assetFa + ")"; trBox.style.color = "#4ade80"; }
+    else if (tr === "BEARISH") { trBox.innerText = "\u0646\u0632\u0648\u0644\u06cc \uD83D\uDD34 (" + assetFa + ")"; trBox.style.color = "#f87171"; }
     document.getElementById("ema-box").innerText = "EMA(" + (d.ema_period || 200) + "): " + (ema ? Number(ema).toFixed(2) : "---");
     document.getElementById("rsi-box").innerText = "RSI(" + (d.rsi_period || 14) + "): " + (rsi ? Number(rsi).toFixed(1) : "---");
   }
@@ -306,9 +389,11 @@
       document.getElementById("btn-chart-oil").classList.toggle("active", target === "OIL");
     }
     toggleRiskInput();
+    enforceAllRules();
     renderPrimaryStats();
     if (document.getElementById("tab-1").classList.contains("active")) redrawChart();
   }
+
   function redrawChart() {
     if (!lastMarketData) return;
     let c = lastMarketData.chart, supsList = lastMarketData.supports || [], ressList = lastMarketData.resistances || [], activeP = lastMarketData.current_price;
@@ -374,7 +459,7 @@
     document.getElementById("auto").value = String(s.auto_trade || false);
     if (s.api_key) document.getElementById("api_key").value = s.api_key;
     if (s.api_secret) document.getElementById("api_secret").value = s.api_secret;
-    toggleAllocInput(); toggleVaultInputs(); toggleRiskInput(); settingsLoaded = true;
+    toggleAllocInput(); toggleVaultInputs(); toggleRiskInput(); enforceAllRules(); settingsLoaded = true;
   }
 
   function updateExtraTabs(all) {
@@ -384,19 +469,39 @@
     if (pos && pos.status === "OPEN") {
       const pnlClass = pos.unrealized_pnl >= 0 ? "pos-green" : "neg-red", pnlSign = pos.unrealized_pnl >= 0 ? "+" : "";
       posDiv.innerHTML = "<div style='display:flex; justify-content:space-between; margin-bottom:8px;'><span>" + pos.symbol + " (" + pos.side + " " + pos.leverage + "x)</span><span class='" + pnlClass + "'>" + pnlSign + pos.unrealized_pnl + " $</span></div><div class='grid-2'><div class='box'>Entry: " + pos.entry_price + "</div><div class='box'>Margin: " + pos.margin + " $</div><div class='box'>TP: " + pos.tp + "</div><div class='box'>SL: " + pos.sl + "</div></div>";
-    } else { posDiv.innerHTML = "No open position."; }
-    if (all.trade_history) { globalTrades = Object.values(all.trade_history).reverse(); document.getElementById("trades-body").innerHTML = globalTrades.map(t => { const w = t.pnl >= 0; return "<tr><td>" + t.time + "</td><td>" + (t.symbol || "BTC") + "</td><td>" + t.side + "</td><td>" + t.invested + "</td><td class='" + (w ? "pos-green" : "neg-red") + "'>" + (w ? "+" : "") + t.pnl + "</td><td style='color:#fbbf24;'>" + (t.vault_saved || 0) + "</td><td><b>" + t.balance_after + "</b></td></tr>"; }).join(""); }
-    if (all.missed_signals) { const mList = Object.values(all.missed_signals).reverse(); document.getElementById("missed-body").innerHTML = mList.map(m => { let b = m.outcome === "SUCCESS" ? "<span class='pos-green'>WIN</span>" : (m.outcome === "FAILED" ? "<span class='neg-red'>LOSS</span>" : "PENDING"); return "<tr><td>" + m.time + "</td><td>" + m.symbol + "</td><td>" + m.side + "</td><td style='direction:ltr;'>" + m.entry + "/" + m.sl + "/" + m.tp + "</td><td>" + b + "</td></tr>"; }).join(""); }
+    } else {
+      posDiv.innerHTML = "No open position.";
+    }
+    if (all.trade_history) {
+      globalTrades = Object.values(all.trade_history).reverse();
+      document.getElementById("trades-body").innerHTML = globalTrades.map(t => {
+        const w = t.pnl >= 0;
+        return "<tr><td>" + t.time + "</td><td>" + (t.symbol || "BTC") + "</td><td>" + t.side + "</td><td>" + t.invested + "</td><td class='" + (w ? "pos-green" : "neg-red") + "'>" + (w ? "+" : "") + t.pnl + "</td><td style='color:#fbbf24;'>" + (t.vault_saved || 0) + "</td><td><b>" + t.balance_after + "</b></td></tr>";
+      }).join("");
+    }
+    if (all.missed_signals) {
+      const mList = Object.values(all.missed_signals).reverse();
+      document.getElementById("missed-body").innerHTML = mList.map(m => {
+        let b = m.outcome === "SUCCESS" ? "<span class='pos-green'>WIN</span>" : (m.outcome === "FAILED" ? "<span class='neg-red'>LOSS</span>" : "PENDING");
+        return "<tr><td>" + m.time + "</td><td>" + m.symbol + "</td><td>" + m.side + "</td><td style='direction:ltr;'>" + m.entry + "/" + m.sl + "/" + m.tp + "</td><td>" + b + "</td></tr>";
+      }).join("");
+    }
   }
 
   function exportExcel() {
     if (!globalTrades.length) { alert("No trades to export."); return; }
     let csv = "Time,Symbol,Side,Invested($),PnL($),VaultSaved($),Fee($),BalanceAfter($)\n";
-    globalTrades.forEach(t => { csv += t.time + "," + (t.symbol || "BTC") + "," + t.side + "," + t.invested + "," + t.pnl + "," + (t.vault_saved || 0) + "," + t.fee + "," + t.balance_after + "\n"; });
-    const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" })); link.download = "Triple_Portfolio_Report.csv"; link.click();
+    globalTrades.forEach(t => {
+      csv += t.time + "," + (t.symbol || "BTC") + "," + t.side + "," + t.invested + "," + t.pnl + "," + (t.vault_saved || 0) + "," + t.fee + "," + t.balance_after + "\n";
+    });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+    link.download = "Triple_Portfolio_Report.csv";
+    link.click();
   }
 
   async function save() {
+    enforceAllRules();
     const data = {
       symbol: document.getElementById("symbol").value,
       timeframe: document.getElementById("timeframe").value,
@@ -413,16 +518,17 @@
       api_key: document.getElementById("api_key").value.trim(),
       api_secret: document.getElementById("api_secret").value.trim()
     };
-    await fetch(DB_ROOT + "/settings.json", {
-      method: "PATCH",
-      body: JSON.stringify(data)
+    await fetch(GSHEET_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify({ action: "save_settings", data: data })
     });
-    alert("Settings Saved Successfully!");
+    alert("Settings Saved to Google Sheets!");
   }
 
   async function syncAll() {
     try {
-      const res = await fetch(DB_ROOT + "/.json");
+      const res = await fetch(GSHEET_URL);
       const all = await res.json();
       if (!all) return;
       const wBal = all.live_market ? all.live_market.wallet_balance : 0;
@@ -432,6 +538,7 @@
     } catch (e) {}
   }
 
+  enforceAllRules();
   syncAll();
   setInterval(syncAll, 5000);
 </script>
