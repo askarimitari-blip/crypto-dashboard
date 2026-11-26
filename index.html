@@ -7,6 +7,9 @@
   <style>
     body { font-family: Tahoma, sans-serif; background: #0f172a; color: #f8fafc; padding: 12px; margin: 0; }
     .container { max-width: 820px; margin: 0 auto; }
+    button { transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.12s ease; box-shadow: 0 3px 0 rgba(0,0,0,0.45); user-select: none; }
+    button:hover { filter: brightness(1.08); }
+    button:active { transform: translateY(3px) scale(0.97); box-shadow: 0 0 0 rgba(0,0,0,0.45); filter: brightness(0.92); }
     .tabs { display: flex; gap: 5px; margin-bottom: 14px; flex-wrap: wrap; }
     .tab-btn { flex: 1; min-width: 95px; padding: 10px 6px; background: #1e293b; color: #94a3b8; border: 1px solid #334155; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 11px; }
     .tab-btn.active { background: #0284c7; color: white; border-color: #0284c7; }
@@ -27,7 +30,10 @@
     .ltr { direction: ltr; text-align: left; }
     .btn-primary { width: 100%; padding: 12px; background: #0284c7; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 14px; }
     .btn-reset { width: 100%; padding: 10px; background: #475569; color: #f8fafc; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 12px; }
+    .btn-tg { width: 100%; padding: 10px; background: #0ea5e9; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 12px; }
+    .btn-sim { width: 100%; padding: 10px; background: #8b5cf6; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 8px; font-size: 12px; }
     .btn-help { background: #f59e0b; color: #0f172a; border: none; padding: 5px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 11px; }
+    .zoom-btn { background: #334155; color: #f8fafc; border: 1px solid #475569; padding: 5px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; }
     .help-box { display: none; background: #0f172a; border: 1px solid #f59e0b; border-radius: 10px; padding: 12px; margin-bottom: 12px; font-size: 12px; line-height: 1.7; }
     .notif-banner { display: none; background: #1e3a8a; border: 2px solid #38bdf8; color: #f8fafc; padding: 12px; border-radius: 10px; margin-bottom: 12px; font-size: 12px; white-space: pre-line; }
     .btn-excel { background: #16a34a; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; }
@@ -39,7 +45,7 @@
     .chart-toggles { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; font-size: 12px; background: #0f172a; padding: 10px; border-radius: 8px; }
     .chart-toggles label { margin: 0; display: flex; align-items: center; gap: 4px; cursor: pointer; color: #f8fafc; }
     .chart-toggles input { width: auto; margin: 0; }
-    canvas { background: #0b1120; border-radius: 8px; border: 1px solid #334155; width: 100%; display: block; direction: ltr; }
+    canvas { background: #0b1120; border-radius: 8px; border: 1px solid #334155; width: 100%; display: block; direction: ltr; cursor: crosshair; touch-action: none; }
   </style>
 </head>
 <body>
@@ -70,24 +76,14 @@
 
       <div id="help-panel" class="help-box">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <b style="color:#fbbf24; font-size:13px;">📘 راهنمای اهرم هوشمند هر بازار و رنگ‌بندی هشدار ریسک</b>
+          <b style="color:#fbbf24; font-size:13px;">📘 راهنمای اهرم هوشمند، خطوط حمایت/مقاومت و زوم لمسی</b>
           <button type="button" onclick="toggleHelp()" style="background:#ef4444; color:white; border:none; border-radius:4px; padding:2px 8px; cursor:pointer;">بستن</button>
         </div>
-        <div style="margin-bottom:6px;">رنگ کادرها سطح ایمنی تنظیمات شما را نشان می‌دهد: <span style="color:#4ade80;">🟢 سبز = ایمن/استاندارد</span> | <span style="color:#fde047;">🟡 زرد = احتیاط</span> | <span style="color:#fca5a5;">🔴 قرمز = پرریسک</span></div>
+        <div style="margin-bottom:6px;">رنگ کادرها سطح ایمنی تنظیمات را نشان می‌دهد: <span style="color:#4ade80;">🟢 سبز = ایمن/استاندارد</span> | <span style="color:#fde047;">🟡 زرد = احتیاط</span> | <span style="color:#fca5a5;">🔴 قرمز = پرریسک</span></div>
         <ul style="margin:0; padding-right:18px;">
-          <li><b>استاندارد ایمن اهرم برای هر دارایی:</b>
-            <ul>
-              <li><b>بیت‌کوین (BTC):</b> بیشترین نقدشوندگی و ساختار تکنیکال منظم‌تر را دارد؛ در سبد سه‌گانه که ریسک بین ۳ بازار پخش می‌شود، استفاده از <b>اهرم 4 یا 5 (پیش‌فرض: 5x)</b> برای بیت‌کوین بازدهی را به شکل چشمگیری بالا می‌برد (سقف تک‌بازار: 10).</li>
-              <li><b>طلای جهانی (XAU/PAXG):</b> نوسانات کنترل‌شده‌تری دارد، اما در اخبار ناگهانی شدو می‌زند؛ استاندارد ایمن آن <b>اهرم 2 تا 3 (پیش‌فرض: 3)</b> است و در سبد ترکیبی روی 3x قفل می‌شود (سقف تک‌بازار: 6).</li>
-              <li><b>نفت خام (WTI):</b> نوسانات موجی و جهش‌های قیمتی بزرگ‌تری دارد؛ استاندارد ایمن و حرفه‌ای آن <b>اهرم 2</b> است و در سبد ترکیبی روی 2x قفل می‌شود (سقف تک‌بازار: 5).</li>
-            </ul>
-          </li>
-          <li><b>دوره EMA:</b> بازه مجاز <code>20 تا 300</code> (۱۵۰ تا ۲۵۰ سبز 🟢 | ۵۰ تا ۱۴۹ یا ۲۵۱ تا ۳۰۰ زرد 🟡 | کمتر از ۵۰ قرمز 🔴)</li>
-          <li><b>دوره RSI:</b> بازه مجاز <code>5 تا 30</code> (۱۲ تا ۱۶ سبز 🟢 | ۸ تا ۱۱ یا ۱۷ تا ۲۴ زرد 🟡 | خارج از آن قرمز 🔴)</li>
-          <li><b>درصد سرمایه (Alloc %):</b> از حداقل الزام صرافی تا <code>100%</code> (تا ۲۰٪ سبز 🟢 | ۲۱٪ تا ۵۰٪ زرد 🟡 | بالای ۵۰٪ قرمز 🔴)</li>
-          <li><b>درصد صندوق ذخیره سود:</b> بازه مجاز <code>1% تا 90%</code> (۱۰٪ تا ۳۰٪ سبز 🟢 | ۳۱٪ تا ۵۰٪ زرد 🟡 | خارج از آن قرمز 🔴)</li>
-          <li><b>سقف ریسک مجاز (Risk %):</b> بازه مجاز <code>0.5% تا 10%</code> (تا ۲.۵٪ سبز 🟢 | ۲.۶٪ تا ۵٪ زرد 🟡 | بالای ۵٪ قرمز 🔴)</li>
-          <li><b>حالت سبد چنددارایی (TRIPLE / DUAL):</b> مقادیر EMA=200، RSI=14، سقف ریسک و اهرم طلا (3x) و نفت (2x) به صورت خودکار قفل می‌شوند تا استراتژی بهینه بدون خطا اجرا شود.</li>
+          <li><b>استاندارد ایمن اهرم هر دارایی:</b> بیت‌کوین در سبد سه‌گانه پیش‌فرض <b>5x</b> (بازه 4 تا 5)، طلا روی <b>3x</b> و نفت خام روی <b>2x</b> قفل است.</li>
+          <li><b>تطابق ۱۵۰ کندلی:</b> خطوط حمایت (زیر قیمت) و مقاومت (بالای قیمت) بر اساس ۱۵۰ کندل اخیر هم در نمودار و هم در خرید و فروش خودکار صرافی اعمال می‌شوند.</li>
+          <li><b>زوم و اسکرول نمودار:</b> در گوشی با باز و بسته کردن دو انگشت زوم کنید و با کشیدن یک انگشت در تاریخچه حرکت کنید.</li>
         </ul>
       </div>
 
@@ -102,8 +98,8 @@
         <div class="box"><div>اندیکاتور RSI</div><b id="rsi-box" style="color:#fbbf24; direction:ltr;">---</b></div>
       </div>
       <div class="grid-2">
-        <div class="box"><div>🟢 حمایت‌های کلیدی</div><div id="sup" style="color:#4ade80; direction:ltr; margin-top:4px;">---</div></div>
-        <div class="box"><div>🔴 مقاومت‌های کلیدی</div><div id="res" style="color:#f87171; direction:ltr; margin-top:4px;">---</div></div>
+        <div class="box"><div>🟢 حمایت‌های کلیدی (زیر قیمت)</div><div id="sup" style="color:#4ade80; direction:ltr; margin-top:4px;">---</div></div>
+        <div class="box"><div>🔴 مقاومت‌های کلیدی (بالای قیمت)</div><div id="res" style="color:#f87171; direction:ltr; margin-top:4px;">---</div></div>
       </div>
     </div>
 
@@ -127,13 +123,11 @@
         </div>
         <div><label>تایم‌فریم</label><select id="timeframe" class="ltr"><option value="15m">15m</option><option value="1h">1h</option><option value="4h" selected>4h</option><option value="1d">1d</option></select></div>
       </div>
-
       <div id="multi-lev-box" class="box" style="margin-top:8px; border:1px solid #334155; text-align:right;">
         <div style="color:#38bdf8; font-weight:bold; margin-bottom:4px;">⚖️ اهرم هوشمند سبد ترکیبی: طلا روی 3x و نفت روی 2x قفل است</div>
         <label style="margin-top:2px;">اهرم هوشمند بیت‌کوین در سبد ترکیبی (پیشنهاد استاندارد: 4 یا 5)</label>
         <input id="btc_multi_lev" class="ltr" type="number" value="5" min="1" max="10" onchange="enforceAllRules()">
       </div>
-
       <div class="grid-3">
         <div><label id="lev-label">اهرم تک‌بازار</label><input id="leverage" class="ltr" type="number" value="3" min="1" max="10" onchange="enforceAllRules()"></div>
         <div><label>دوره EMA (۲۰ تا ۳۰۰)</label><input id="ema_period" class="ltr" type="number" value="200" min="20" max="300" onchange="enforceAllRules()"></div>
@@ -158,68 +152,56 @@
         <div><label>سقف ریسک مجاز (۰.۵ تا ۱۰٪)</label><input id="risk" class="ltr" type="number" value="2" min="0.5" max="10" step="0.5" onchange="enforceAllRules()"></div>
         <div><label>معامله خودکار</label><select id="auto"><option value="false">خاموش (فقط هشدار و پیشنهاد)</option><option value="true">روشن (اجرای خودکار)</option></select></div>
       </div>
-
       <h4 style="margin:14px 0 6px 0; color:#fbbf24;">🔔 تنظیمات هشدار، زنگ صوتی و گزارش تلگرام</h4>
       <div class="grid-3">
-        <div>
-          <label>زنگ صوتی و اعلان مرورگر</label>
-          <select id="sound_enabled" onchange="requestNotifPerm()">
-            <option value="true" selected>روشن (پخش زنگ)</option>
-            <option value="false">خاموش</option>
-          </select>
-        </div>
-        <div>
-          <label>هشدار موقعیت از دست رفته</label>
-          <select id="missed_alert">
-            <option value="true" selected>روشن (اعلام فرصت‌ها)</option>
-            <option value="false">خاموش</option>
-          </select>
-        </div>
-        <div>
-          <label>ارسال گزارش به تلگرام</label>
-          <select id="tg_enabled">
-            <option value="false" selected>خاموش</option>
-            <option value="true">روشن</option>
-          </select>
-        </div>
+        <div><label>زنگ صوتی و اعلان مرورگر</label><select id="sound_enabled" onchange="requestNotifPerm()"><option value="true" selected>روشن (پخش زنگ)</option><option value="false">خاموش</option></select></div>
+        <div><label>هشدار موقعیت از دست رفته</label><select id="missed_alert"><option value="true" selected>روشن (اعلام فرصت‌ها)</option><option value="false">خاموش</option></select></div>
+        <div><label>ارسال گزارش به تلگرام</label><select id="tg_enabled"><option value="false" selected>خاموش</option><option value="true">روشن</option></select></div>
       </div>
       <div class="grid-2">
         <div><label>توکن ربات تلگرام (Bot Token)</label><input id="tg_token" class="ltr" type="password" placeholder="123456:ABC-DEF..."></div>
         <div><label>شناسه عددی چت تلگرام (Chat ID)</label><input id="tg_chat_id" class="ltr" type="text" placeholder="123456789"></div>
       </div>
-
+      <div class="grid-2">
+        <button type="button" class="btn-tg" onclick="testTelegram()">📨 تست اتصال تلگرام</button>
+        <button type="button" class="btn-sim" onclick="simulateSignal()">🧪 تست شبیه‌سازی سیگنال</button>
+      </div>
       <label>کلید API صرافی BingX</label><input id="api_key" class="ltr" type="password" placeholder="API Key">
       <label>کلید Secret صرافی BingX</label><input id="api_secret" class="ltr" type="password" placeholder="Secret Key">
-      <button class="btn-primary" onclick="save()">💾 ذخیره و اعمال تنظیمات</button>
-      <button class="btn-reset" onclick="resetDefaults()">🔄 بازگشت کلیه پارامترها به حالت استاندارد</button>
+      <button type="button" class="btn-primary" onclick="save()">💾 ذخیره و اعمال تنظیمات</button>
+      <button type="button" class="btn-reset" onclick="resetDefaults()">🔄 بازگشت کلیه پارامترها به حالت استاندارد</button>
     </div>
   </div>
   <div class="tab-content" id="tab-1">
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
-        <h4 style="margin:0; color:#38bdf8;">📈 نمودار کندلی قیمت و اندیکاتورها</h4>
+        <h4 style="margin:0; color:#38bdf8;">📈 نمودار کندلی قیمت (زوم لمسی و دکمه‌ای)</h4>
         <div style="display:flex; gap:5px; flex-wrap:wrap;">
-          <button type="button" id="btn-chart-btc" class="tab-btn active" style="padding:6px 10px; min-width:85px;" onclick="setChartAsset('BTC', true)">₿ بیت‌کوین</button>
-          <button type="button" id="btn-chart-gold" class="tab-btn" style="padding:6px 10px; min-width:85px;" onclick="setChartAsset('GOLD', true)">🪙 طلا (XAU)</button>
-          <button type="button" id="btn-chart-oil" class="tab-btn" style="padding:6px 10px; min-width:85px;" onclick="setChartAsset('OIL', true)">🛢️ نفت (WTI)</button>
+          <button type="button" id="btn-chart-btc" class="tab-btn active" style="padding:6px 10px; min-width:75px;" onclick="setChartAsset('BTC', true)">₿ بیت‌کوین</button>
+          <button type="button" id="btn-chart-gold" class="tab-btn" style="padding:6px 10px; min-width:75px;" onclick="setChartAsset('GOLD', true)">🪙 طلا</button>
+          <button type="button" id="btn-chart-oil" class="tab-btn" style="padding:6px 10px; min-width:75px;" onclick="setChartAsset('OIL', true)">🛢️ نفت</button>
         </div>
       </div>
       <div class="chart-toggles">
-        <label><input type="checkbox" id="chk-ema" checked onchange="redrawChart()"> خط EMA (نارنجی)</label>
-        <label><input type="checkbox" id="chk-sup" checked onchange="redrawChart()"> خطوط حمایت (سبز)</label>
-        <label><input type="checkbox" id="chk-res" checked onchange="redrawChart()"> خطوط مقاومت (قرمز)</label>
+        <label><input type="checkbox" id="chk-ema" checked onchange="redrawChart()"> خط EMA</label>
+        <label><input type="checkbox" id="chk-sup" checked onchange="redrawChart()"> حمایت‌ها</label>
+        <label><input type="checkbox" id="chk-res" checked onchange="redrawChart()"> مقاومت‌ها</label>
         <label><input type="checkbox" id="chk-rsi" checked onchange="redrawChart()"> پنجره RSI</label>
+        <div style="margin-right:auto; display:flex; gap:4px;">
+          <button type="button" class="zoom-btn" onclick="changeZoom(-15)">🔍+</button>
+          <button type="button" class="zoom-btn" onclick="changeZoom(15)">🔍-</button>
+          <button type="button" class="zoom-btn" onclick="resetZoom()">↺</button>
+        </div>
       </div>
       <canvas id="priceChart"></canvas>
       <div id="rsi-container" style="margin-top:10px;"><canvas id="rsiChart"></canvas></div>
     </div>
   </div>
-
   <div class="tab-content" id="tab-2">
     <div class="card" style="overflow-x:auto;">
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <h4 style="margin:0; color:#38bdf8;">📜 گزارش کامل معاملات</h4>
-        <button class="btn-excel" onclick="exportExcel()">📥 خروجی اکسل</button>
+        <button type="button" class="btn-excel" onclick="exportExcel()">📥 خروجی اکسل</button>
       </div>
       <table>
         <thead><tr><th>تاریخ</th><th>نماد</th><th>جهت</th><th>سرمایه ($)</th><th>سود/زیان ($)</th><th>ذخیره صندوق ($)</th><th>موجودی بعد ($)</th></tr></thead>
@@ -242,6 +224,7 @@
   const GSHEET_URL = "https://script.google.com/macros/s/AKfycbydFBPW-R9L_9Ic4W1gaNvH2RLLiptT5p1aTKgfT8W4AbB2Z828ZOh0iImi-fAZ2AXz_g/exec";
   let globalTrades = [], lastMarketData = null, lastOpenPos = null, settingsLoaded = false;
   let activeChartAsset = "BTC", userPickedChart = false, lastNotifId = localStorage.getItem("lastNotifId") || "";
+  let zoomCount = 50, panOffset = 0, isDragging = false, dragStartX = 0, pinchStartDist = 0;
 
   function toggleHelp() {
     const hp = document.getElementById("help-panel");
@@ -271,7 +254,44 @@
       new Notification(title, { body: body });
     }
   }
+  function changeZoom(delta) {
+    zoomCount = Math.min(150, Math.max(15, zoomCount + delta));
+    redrawChart();
+  }
 
+  function resetZoom() {
+    zoomCount = 50; panOffset = 0;
+    redrawChart();
+  }
+
+  function setupChartGestures() {
+    const c = document.getElementById("priceChart");
+    c.addEventListener("wheel", e => { e.preventDefault(); changeZoom(e.deltaY > 0 ? 10 : -10); }, { passive: false });
+    c.addEventListener("mousedown", e => { isDragging = true; dragStartX = e.clientX; });
+    window.addEventListener("mouseup", () => { isDragging = false; });
+    c.addEventListener("mousemove", e => {
+      if (!isDragging) return;
+      const dx = e.clientX - dragStartX;
+      if (Math.abs(dx) > 12) { panOffset = Math.max(0, Math.min(120, panOffset + (dx > 0 ? 2 : -2))); dragStartX = e.clientX; redrawChart(); }
+    });
+    c.addEventListener("touchstart", e => {
+      if (e.touches.length === 2) {
+        pinchStartDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      } else if (e.touches.length === 1) {
+        isDragging = true; dragStartX = e.touches[0].clientX;
+      }
+    }, { passive: true });
+    c.addEventListener("touchmove", e => {
+      if (e.touches.length === 2) {
+        const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+        if (Math.abs(dist - pinchStartDist) > 15) { changeZoom(dist > pinchStartDist ? -8 : 8); pinchStartDist = dist; }
+      } else if (e.touches.length === 1 && isDragging) {
+        const dx = e.touches[0].clientX - dragStartX;
+        if (Math.abs(dx) > 10) { panOffset = Math.max(0, Math.min(120, panOffset + (dx > 0 ? 2 : -2))); dragStartX = e.touches[0].clientX; redrawChart(); }
+      }
+    }, { passive: true });
+    c.addEventListener("touchend", () => { isDragging = false; });
+  }
   function switchTab(idx) {
     document.querySelectorAll('.tabs .tab-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
     document.querySelectorAll('.tab-content').forEach((c, i) => c.classList.toggle('active', i === idx));
@@ -303,89 +323,51 @@
     const mLev = clampVal(mLevEl, 1, 10);
     setZoneColor(mLevEl, (mLev >= 4 && mLev <= 5) ? "green" : (mLev <= 3 ? "yellow" : "red"));
 
-    const levEl = document.getElementById("leverage");
-    const levLbl = document.getElementById("lev-label");
+    const levEl = document.getElementById("leverage"), levLbl = document.getElementById("lev-label");
     let effectiveLev = 3;
-
     if (isMulti) {
-      levEl.disabled = true; levEl.style.opacity = "0.4";
-      levLbl.innerText = "اهرم تک‌بازار (قفل در سبد ترکیبی)";
-      effectiveLev = 3;
+      levEl.disabled = true; levEl.style.opacity = "0.4"; levLbl.innerText = "اهرم تک‌بازار (قفل در سبد ترکیبی)";
     } else {
       levEl.disabled = false; levEl.style.opacity = "1";
-      if (isOil) {
-        levLbl.innerText = "اهرم نفت (۱ تا ۵ | ایمن: ۲)";
-        const v = clampVal(levEl, 1, 5);
-        setZoneColor(levEl, v <= 2 ? "green" : (v === 3 ? "yellow" : "red"));
-        effectiveLev = v;
-      } else if (isGold) {
-        levLbl.innerText = "اهرم طلا (۱ تا ۶ | ایمن: ۲ تا ۳)";
-        const v = clampVal(levEl, 1, 6);
-        setZoneColor(levEl, v <= 3 ? "green" : (v === 4 ? "yellow" : "red"));
-        effectiveLev = v;
-      } else {
-        levLbl.innerText = "اهرم بیت‌کوین (۱ تا ۱۰ | استاندارد: ۴ تا ۵)";
-        const v = clampVal(levEl, 1, 10);
-        setZoneColor(levEl, v <= 5 ? "green" : (v <= 7 ? "yellow" : "red"));
-        effectiveLev = v;
-      }
+      if (isOil) { levLbl.innerText = "اهرم نفت (۱ تا ۵ | ایمن: ۲)"; effectiveLev = clampVal(levEl, 1, 5); setZoneColor(levEl, effectiveLev <= 2 ? "green" : (effectiveLev === 3 ? "yellow" : "red")); }
+      else if (isGold) { levLbl.innerText = "اهرم طلا (۱ تا ۶ | ایمن: ۲ تا ۳)"; effectiveLev = clampVal(levEl, 1, 6); setZoneColor(levEl, effectiveLev <= 3 ? "green" : (effectiveLev === 4 ? "yellow" : "red")); }
+      else { levLbl.innerText = "اهرم بیت‌کوین (۱ تا ۱۰ | استاندارد: ۴ تا ۵)"; effectiveLev = clampVal(levEl, 1, 10); setZoneColor(levEl, effectiveLev <= 5 ? "green" : (effectiveLev <= 7 ? "yellow" : "red")); }
     }
 
-    const emaEl = document.getElementById("ema_period");
-    const rsiEl = document.getElementById("rsi_period");
-    const rkEl = document.getElementById("risk");
-
+    const emaEl = document.getElementById("ema_period"), rsiEl = document.getElementById("rsi_period"), rkEl = document.getElementById("risk");
     if (isMulti) {
       emaEl.value = 200; emaEl.disabled = true; emaEl.style.opacity = "0.4"; setZoneColor(emaEl, "green");
       rsiEl.value = 14; rsiEl.disabled = true; rsiEl.style.opacity = "0.4"; setZoneColor(rsiEl, "green");
       rkEl.disabled = true; rkEl.style.opacity = "0.4"; setZoneColor(rkEl, "green");
     } else {
-      emaEl.disabled = false; emaEl.style.opacity = "1";
-      const ema = clampVal(emaEl, 20, 300);
-      setZoneColor(emaEl, (ema >= 150 && ema <= 250) ? "green" : (ema >= 50 ? "yellow" : "red"));
-
-      rsiEl.disabled = false; rsiEl.style.opacity = "1";
-      const rsi = clampVal(rsiEl, 5, 30);
-      setZoneColor(rsiEl, (rsi >= 12 && rsi <= 16) ? "green" : ((rsi >= 8 && rsi <= 24) ? "yellow" : "red"));
-
-      rkEl.disabled = false; rkEl.style.opacity = "1";
-      const rk = clampVal(rkEl, 0.5, 10);
-      setZoneColor(rkEl, rk <= 2.5 ? "green" : (rk <= 5 ? "yellow" : "red"));
+      emaEl.disabled = false; emaEl.style.opacity = "1"; const ema = clampVal(emaEl, 20, 300); setZoneColor(emaEl, (ema >= 150 && ema <= 250) ? "green" : (ema >= 50 ? "yellow" : "red"));
+      rsiEl.disabled = false; rsiEl.style.opacity = "1"; const rsi = clampVal(rsiEl, 5, 30); setZoneColor(rsiEl, (rsi >= 12 && rsi <= 16) ? "green" : ((rsi >= 8 && rsi <= 24) ? "yellow" : "red"));
+      rkEl.disabled = false; rkEl.style.opacity = "1"; const rk = clampVal(rkEl, 0.5, 10); setZoneColor(rkEl, rk <= 2.5 ? "green" : (rk <= 5 ? "yellow" : "red"));
     }
 
-    const vpEl = document.getElementById("vault_percent");
-    const vp = clampVal(vpEl, 1, 90);
+    const vpEl = document.getElementById("vault_percent"), vp = clampVal(vpEl, 1, 90);
     setZoneColor(vpEl, (vp >= 10 && vp <= 30) ? "green" : ((vp >= 5 && vp <= 50) ? "yellow" : "red"));
 
-    const allocMode = document.getElementById("alloc_mode").value;
-    const allocEl = document.getElementById("alloc_value");
+    const allocMode = document.getElementById("alloc_mode").value, allocEl = document.getElementById("alloc_value");
     const wBal = (lastMarketData && lastMarketData.wallet_balance > 0) ? lastMarketData.wallet_balance : 1000;
-    const minNotional = (lastMarketData && lastMarketData.min_notional) ? lastMarketData.min_notional : 75;
-    const minMargin = minNotional / (isMulti ? 2 : effectiveLev);
-
+    const minMargin = ((lastMarketData && lastMarketData.min_notional) ? lastMarketData.min_notional : 75) / (isMulti ? 2 : effectiveLev);
     if (allocMode === "percent") {
-      let minPct = Math.min(100, Math.ceil((minMargin / wBal) * 100));
-      if (minPct < 1) minPct = 1;
-      allocEl.min = minPct; allocEl.max = 100;
-      const curPct = clampVal(allocEl, minPct, 100);
-      allocEl.disabled = (minPct >= 98);
-      allocEl.style.opacity = (minPct >= 98) ? "0.5" : "1";
+      let minPct = Math.max(1, Math.min(100, Math.ceil((minMargin / wBal) * 100)));
+      allocEl.min = minPct; allocEl.max = 100; const curPct = clampVal(allocEl, minPct, 100);
+      allocEl.disabled = (minPct >= 98); allocEl.style.opacity = (minPct >= 98) ? "0.5" : "1";
       setZoneColor(allocEl, curPct <= 20 ? "green" : (curPct <= 50 ? "yellow" : "red"));
     } else if (allocMode === "fixed") {
       const minFix = Math.min(wBal, Math.ceil(minMargin));
-      allocEl.min = minFix; allocEl.max = wBal;
-      const curFix = clampVal(allocEl, minFix, wBal);
-      allocEl.disabled = (minFix >= wBal);
-      allocEl.style.opacity = (minFix >= wBal) ? "0.5" : "1";
-      const eqPct = (curFix / wBal) * 100;
-      setZoneColor(allocEl, eqPct <= 20 ? "green" : (eqPct <= 50 ? "yellow" : "red"));
+      allocEl.min = minFix; allocEl.max = wBal; const curFix = clampVal(allocEl, minFix, wBal);
+      allocEl.disabled = (minFix >= wBal); allocEl.style.opacity = (minFix >= wBal) ? "0.5" : "1";
+      setZoneColor(allocEl, ((curFix / wBal) * 100) <= 20 ? "green" : (((curFix / wBal) * 100) <= 50 ? "yellow" : "red"));
     }
   }
 
-  function getTargetAssetFromMode(modeStr) {
-    if (!modeStr) return "BTC";
-    if (modeStr.includes("WTI") || modeStr.includes("OIL")) return "OIL";
-    if (modeStr.includes("PAXG") || modeStr.includes("XAU")) return "GOLD";
+  function getTargetAssetFromMode(m) {
+    if (!m) return "BTC";
+    if (m.includes("WTI") || m.includes("OIL")) return "OIL";
+    if (m.includes("PAXG") || m.includes("XAU")) return "GOLD";
     if (lastOpenPos && lastOpenPos.status === "OPEN" && lastOpenPos.symbol) {
       if (lastOpenPos.symbol.includes("WTI") || lastOpenPos.symbol.includes("OIL")) return "OIL";
       if (lastOpenPos.symbol.includes("PAXG") || lastOpenPos.symbol.includes("XAU")) return "GOLD";
@@ -394,77 +376,54 @@
   }
 
   function setChartAsset(asset, manual) {
-    activeChartAsset = asset;
-    if (manual) userPickedChart = true;
+    activeChartAsset = asset; if (manual) userPickedChart = true;
     document.getElementById("btn-chart-btc").classList.toggle("active", asset === "BTC");
     document.getElementById("btn-chart-gold").classList.toggle("active", asset === "GOLD");
     document.getElementById("btn-chart-oil").classList.toggle("active", asset === "OIL");
-    renderPrimaryStats();
-    redrawChart();
+    renderPrimaryStats(); redrawChart();
   }
 
   function onMarketSelectChange() {
-    userPickedChart = false;
-    const selectedMode = document.getElementById("symbol").value;
-    if (selectedMode.includes("WTI") || selectedMode.includes("OIL")) document.getElementById("leverage").value = 2;
-    else if (selectedMode.includes("PAXG") || selectedMode.includes("XAU")) document.getElementById("leverage").value = 3;
-    else if (selectedMode.includes("BTC")) document.getElementById("leverage").value = 5;
-    setChartAsset(getTargetAssetFromMode(selectedMode), false);
-    enforceAllRules();
+    userPickedChart = false; const m = document.getElementById("symbol").value;
+    if (m.includes("WTI") || m.includes("OIL")) document.getElementById("leverage").value = 2;
+    else if (m.includes("PAXG") || m.includes("XAU")) document.getElementById("leverage").value = 3;
+    else if (m.includes("BTC")) document.getElementById("leverage").value = 5;
+    setChartAsset(getTargetAssetFromMode(m), false); enforceAllRules();
   }
 
   function toggleAllocInput() {
-    const mode = document.getElementById("alloc_mode").value;
-    const box = document.getElementById("alloc-val-box");
-    const lbl = document.getElementById("alloc-val-label");
-    if (mode === "all") { box.style.visibility = "hidden"; }
-    else {
-      box.style.visibility = "visible";
-      lbl.innerText = mode === "fixed" ? "Fixed Amount ($)" : "Capital Percent (%)";
-    }
+    const m = document.getElementById("alloc_mode").value, box = document.getElementById("alloc-val-box");
+    box.style.visibility = (m === "all") ? "hidden" : "visible";
+    document.getElementById("alloc-val-label").innerText = (m === "fixed") ? "مبلغ ثابت ($)" : "مقدار درصد سرمایه (%)";
   }
 
   function toggleVaultInputs() {
-    const isEnabled = document.getElementById("vault_enabled").value === "true";
-    const baseInp = document.getElementById("base_capital");
-    const pctInp = document.getElementById("vault_percent");
-    baseInp.disabled = !isEnabled; pctInp.disabled = !isEnabled;
-    baseInp.style.opacity = isEnabled ? "1" : "0.4"; pctInp.style.opacity = isEnabled ? "1" : "0.4";
+    const on = document.getElementById("vault_enabled").value === "true";
+    document.getElementById("base_capital").disabled = !on; document.getElementById("vault_percent").disabled = !on;
+    document.getElementById("base_capital").style.opacity = on ? "1" : "0.4"; document.getElementById("vault_percent").style.opacity = on ? "1" : "0.4";
   }
 
   function resetDefaults() {
-    document.getElementById("symbol").value = "TRIPLE_USDT";
-    document.getElementById("timeframe").value = "4h";
-    document.getElementById("btc_multi_lev").value = 5;
-    document.getElementById("leverage").value = 3;
-    document.getElementById("ema_period").value = 200;
-    document.getElementById("rsi_period").value = 14;
-    document.getElementById("alloc_mode").value = "percent";
-    document.getElementById("alloc_value").value = 10;
-    document.getElementById("vault_enabled").value = "true";
-    document.getElementById("base_capital").value = 1000;
-    document.getElementById("vault_percent").value = 10;
-    document.getElementById("risk").value = 2;
+    document.getElementById("symbol").value = "TRIPLE_USDT"; document.getElementById("timeframe").value = "4h";
+    document.getElementById("btc_multi_lev").value = 5; document.getElementById("leverage").value = 3;
+    document.getElementById("ema_period").value = 200; document.getElementById("rsi_period").value = 14;
+    document.getElementById("alloc_mode").value = "percent"; document.getElementById("alloc_value").value = 10;
+    document.getElementById("vault_enabled").value = "true"; document.getElementById("base_capital").value = 1000;
+    document.getElementById("vault_percent").value = 10; document.getElementById("risk").value = 2;
     toggleAllocInput(); toggleVaultInputs(); onMarketSelectChange();
-    alert("Reset to Standard Defaults. Click Save to apply.");
+    alert("تنظیمات به مقادیر استاندارد بازگشت. دکمه ذخیره را بزنید.");
   }
   function renderPrimaryStats() {
     if (!lastMarketData) return;
     const d = lastMarketData;
-    let tr = d.trend, ema = d.ema_val, rsi = d.rsi_val, sups = d.supports || [], ress = d.resistances || [];
-    let assetFa = "\u0628\u06cc\u062a\u200c\u06a9\u0648\u06cc\u0646";
-    if (activeChartAsset === "GOLD") {
-      tr = d.gold_trend || d.trend; ema = d.gold_ema || d.ema_val; rsi = d.gold_rsi || d.rsi_val;
-      sups = d.gold_supports || []; ress = d.gold_resistances || []; assetFa = "\u0637\u0644\u0627";
-    } else if (activeChartAsset === "OIL") {
-      tr = d.oil_trend || d.trend; ema = d.oil_ema || d.ema_val; rsi = d.oil_rsi || d.rsi_val;
-      sups = d.oil_supports || []; ress = d.oil_resistances || []; assetFa = "\u0646\u0641\u062a";
-    }
+    let tr = d.trend, ema = d.ema_val, rsi = d.rsi_val, sups = d.supports || [], ress = d.resistances || [], assetFa = "بیت‌کوین";
+    if (activeChartAsset === "GOLD") { tr = d.gold_trend || d.trend; ema = d.gold_ema || d.ema_val; rsi = d.gold_rsi || d.rsi_val; sups = d.gold_supports || []; ress = d.gold_resistances || []; assetFa = "طلا"; }
+    else if (activeChartAsset === "OIL") { tr = d.oil_trend || d.trend; ema = d.oil_ema || d.ema_val; rsi = d.oil_rsi || d.rsi_val; sups = d.oil_supports || []; ress = d.oil_resistances || []; assetFa = "نفت"; }
     document.getElementById("sup").innerText = sups.map(x => Number(x).toFixed(2)).join(" | ") || "---";
     document.getElementById("res").innerText = ress.map(x => Number(x).toFixed(2)).join(" | ") || "---";
     const trBox = document.getElementById("trend-box");
-    if (tr === "BULLISH") { trBox.innerText = "\u0635\u0639\u0648\u062f\u06cc \uD83D\uDFE2 (" + assetFa + ")"; trBox.style.color = "#4ade80"; }
-    else if (tr === "BEARISH") { trBox.innerText = "\u0646\u0632\u0648\u0644\u06cc \uD83D\uDD34 (" + assetFa + ")"; trBox.style.color = "#f87171"; }
+    trBox.innerText = (tr === "BULLISH" ? "صعودی 🟢 (" : "نزولی 🔴 (") + assetFa + ")";
+    trBox.style.color = (tr === "BULLISH") ? "#4ade80" : "#f87171";
     document.getElementById("ema-box").innerText = "EMA(" + (d.ema_period || 200) + "): " + (ema ? Number(ema).toFixed(2) : "---");
     document.getElementById("rsi-box").innerText = "RSI(" + (d.rsi_period || 14) + "): " + (rsi ? Number(rsi).toFixed(1) : "---");
   }
@@ -482,7 +441,6 @@
     document.getElementById("btc-tr").innerText = d.trend === "BULLISH" ? "UP" : "DOWN";
     document.getElementById("gold-tr").innerText = d.gold_trend === "BULLISH" ? "UP" : "DOWN";
     document.getElementById("oil-tr").innerText = d.oil_trend === "BULLISH" ? "UP" : "DOWN";
-
     if (!userPickedChart) {
       const target = getTargetAssetFromMode(document.getElementById("symbol").value || d.symbol);
       activeChartAsset = target;
@@ -490,29 +448,29 @@
       document.getElementById("btn-chart-gold").classList.toggle("active", target === "GOLD");
       document.getElementById("btn-chart-oil").classList.toggle("active", target === "OIL");
     }
-    enforceAllRules();
-    renderPrimaryStats();
+    enforceAllRules(); renderPrimaryStats();
     if (document.getElementById("tab-1").classList.contains("active")) redrawChart();
   }
 
   function redrawChart() {
     if (!lastMarketData) return;
     let c = lastMarketData.chart, supsList = lastMarketData.supports || [], ressList = lastMarketData.resistances || [], activeP = lastMarketData.current_price;
-    if (activeChartAsset === "GOLD" && lastMarketData.gold_chart) {
-      c = lastMarketData.gold_chart; supsList = lastMarketData.gold_supports || []; ressList = lastMarketData.gold_resistances || []; activeP = lastMarketData.gold_price;
-    } else if (activeChartAsset === "OIL" && lastMarketData.oil_chart) {
-      c = lastMarketData.oil_chart; supsList = lastMarketData.oil_supports || []; ressList = lastMarketData.oil_resistances || []; activeP = lastMarketData.oil_price;
-    }
+    if (activeChartAsset === "GOLD" && lastMarketData.gold_chart) { c = lastMarketData.gold_chart; supsList = lastMarketData.gold_supports || []; ressList = lastMarketData.gold_resistances || []; activeP = lastMarketData.gold_price; }
+    else if (activeChartAsset === "OIL" && lastMarketData.oil_chart) { c = lastMarketData.oil_chart; supsList = lastMarketData.oil_supports || []; ressList = lastMarketData.oil_resistances || []; activeP = lastMarketData.oil_price; }
     if (!c || !c.closes) return;
+
+    const total = c.closes.length, endIdx = Math.max(15, total - panOffset), startIdx = Math.max(0, endIdx - zoomCount);
+    const closes = c.closes.slice(startIdx, endIdx), highs = (c.highs || c.closes).slice(startIdx, endIdx), lows = (c.lows || c.closes).slice(startIdx, endIdx), opens = (c.opens || c.closes).slice(startIdx, endIdx);
+    const emaArr = c.ema ? c.ema.slice(startIdx, endIdx) : null, rsiArr = c.rsi ? c.rsi.slice(startIdx, endIdx) : null, timesArr = c.times ? c.times.slice(startIdx, endIdx) : [];
+
     const showEma = document.getElementById("chk-ema").checked, showSup = document.getElementById("chk-sup").checked, showRes = document.getElementById("chk-res").checked, showRsi = document.getElementById("chk-rsi").checked;
     const canvas = document.getElementById("priceChart"), ctx = canvas.getContext("2d");
     const W = canvas.width = Math.max(300, canvas.parentElement.clientWidth - 20), H = canvas.height = 330;
     ctx.clearRect(0, 0, W, H); ctx.textAlign = "left";
 
     const padR = 78, padB = 28, padT = 15, padL = 10, plotW = W - padR - padL, plotH = H - padB - padT;
-    const highs = c.highs || c.closes, lows = c.lows || c.closes, opens = c.opens || c.closes;
     let allVals = highs.concat(lows);
-    if (showEma && c.ema) allVals = allVals.concat(c.ema);
+    if (showEma && emaArr) allVals = allVals.concat(emaArr);
     if (showSup && supsList.length) allVals = allVals.concat(supsList);
     if (showRes && ressList.length) allVals = allVals.concat(ressList);
 
@@ -523,29 +481,26 @@
     if (showSup) supsList.forEach(s => { const y = toY(s); ctx.strokeStyle = "#4ade80"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke(); });
     if (showRes) ressList.forEach(r => { const y = toY(r); ctx.strokeStyle = "#f87171"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke(); });
 
-    ctx.strokeStyle = "#475569"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, H - padB); ctx.lineTo(W - padR, H - padB); ctx.stroke();
-    const n = c.closes.length, step = plotW / n, candleW = Math.max(3, step * 0.65), tf = lastMarketData.timeframe || "4h", tickInterval = Math.max(1, Math.floor(n / 6));
+    const n = closes.length, step = plotW / n, candleW = Math.max(2, step * 0.65), tf = lastMarketData.timeframe || "4h", tickInterval = Math.max(1, Math.floor(n / 6));
     for (let i = 0; i < n; i++) {
-      const x = padL + i * step + step / 2, yO = toY(opens[i]), yC = toY(c.closes[i]), yH = toY(highs[i]), yL = toY(lows[i]), isUp = c.closes[i] >= opens[i];
+      const x = padL + i * step + step / 2, yO = toY(opens[i]), yC = toY(closes[i]), yH = toY(highs[i]), yL = toY(lows[i]), isUp = closes[i] >= opens[i];
       ctx.strokeStyle = isUp ? "#4ade80" : "#f87171"; ctx.fillStyle = isUp ? "#4ade80" : "#f87171"; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(x, yH); ctx.lineTo(x, yL); ctx.stroke();
       ctx.fillRect(x - candleW / 2, Math.min(yO, yC), candleW, Math.max(1.5, Math.abs(yC - yO)));
-      ctx.strokeStyle = "#475569"; ctx.beginPath(); ctx.moveTo(x, H - padB); ctx.lineTo(x, H - padB + (i % tickInterval === 0 ? 7 : 3)); ctx.stroke();
-      if (i % tickInterval === 0 && c.times && c.times[i]) { ctx.fillStyle = "#94a3b8"; ctx.font = "10px Tahoma"; const parts = c.times[i].split(" "); ctx.fillText((tf === "1d" || tf === "4h") ? c.times[i] : parts[parts.length - 1], x - 20, H - 8); }
+      if (i % tickInterval === 0 && timesArr[i]) { ctx.fillStyle = "#94a3b8"; ctx.font = "10px Tahoma"; const parts = timesArr[i].split(" "); ctx.fillText((tf === "1d" || tf === "4h") ? timesArr[i] : parts[parts.length - 1], x - 20, H - 8); }
     }
-    if (showEma && c.ema) { ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 1.8; ctx.beginPath(); c.ema.forEach((val, i) => { const x = padL + i * step + step / 2, y = toY(val); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }); ctx.stroke(); }
+    if (showEma && emaArr) { ctx.strokeStyle = "#f59e0b"; ctx.lineWidth = 1.8; ctx.beginPath(); emaArr.forEach((val, i) => { const x = padL + i * step + step / 2, y = toY(val); if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }); ctx.stroke(); }
     const curY = toY(activeP); ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, curY); ctx.lineTo(W - padR, curY); ctx.stroke();
     ctx.fillStyle = "#0284c7"; ctx.fillRect(W - padR + 2, curY - 9, 72, 18); ctx.fillStyle = "#ffffff"; ctx.fillText(Number(activeP).toFixed(2), W - padR + 6, curY + 4);
 
     const rsiDiv = document.getElementById("rsi-container"); rsiDiv.style.display = showRsi ? "block" : "none";
-    if (showRsi && c.rsi) {
+    if (showRsi && rsiArr) {
       const rCanvas = document.getElementById("rsiChart"), rCtx = rCanvas.getContext("2d"); rCanvas.width = W; rCanvas.height = 95; rCtx.clearRect(0, 0, W, 95); rCtx.textAlign = "left";
       const toRY = v => 10 + 75 - (v / 100) * 75; rCtx.strokeStyle = "#334155"; rCtx.lineWidth = 0.5;
-      new Array(30, 70).forEach(lvl => { const y = toRY(lvl); rCtx.beginPath(); rCtx.moveTo(padL, y); rCtx.lineTo(W - padR, y); rCtx.stroke(); rCtx.fillStyle = "#94a3b8"; rCtx.fillText(lvl, W - padR + 6, y + 4); });
-      rCtx.strokeStyle = "#a855f7"; rCtx.lineWidth = 1.5; rCtx.beginPath(); c.rsi.forEach((v, i) => { const x = padL + i * step + step / 2, y = toRY(v); if (i === 0) rCtx.moveTo(x, y); else rCtx.lineTo(x, y); }); rCtx.stroke();
+      [30, 70].forEach(lvl => { const y = toRY(lvl); rCtx.beginPath(); rCtx.moveTo(padL, y); rCtx.lineTo(W - padR, y); rCtx.stroke(); rCtx.fillStyle = "#94a3b8"; rCtx.fillText(lvl, W - padR + 6, y + 4); });
+      rCtx.strokeStyle = "#a855f7"; rCtx.lineWidth = 1.5; rCtx.beginPath(); rsiArr.forEach((v, i) => { const x = padL + i * step + step / 2, y = toRY(v); if (i === 0) rCtx.moveTo(x, y); else rCtx.lineTo(x, y); }); rCtx.stroke();
     }
   }
-
   function applySettings(s, walletBal) {
     if (!s || settingsLoaded) return;
     if (s.symbol) document.getElementById("symbol").value = s.symbol;
@@ -566,14 +521,10 @@
     document.getElementById("missed_alert").value = String(s.missed_alert !== false);
     document.getElementById("tg_enabled").value = String(s.tg_enabled || false);
     if (s.tg_token) document.getElementById("tg_token").value = s.tg_token;
-    if (s.tg_token) document.getElementById("tg_token").value = s.tg_token;
     if (s.tg_chat_id) document.getElementById("tg_chat_id").value = s.tg_chat_id;
     if (s.api_key) document.getElementById("api_key").value = s.api_key;
     if (s.api_secret) document.getElementById("api_secret").value = s.api_secret;
-    toggleAllocInput();
-    toggleVaultInputs();
-    enforceAllRules();
-    settingsLoaded = true;
+    toggleAllocInput(); toggleVaultInputs(); enforceAllRules(); settingsLoaded = true;
   }
 
   function updateExtraTabs(all) {
@@ -583,105 +534,63 @@
     if (pos && pos.status === "OPEN") {
       const pnlClass = pos.unrealized_pnl >= 0 ? "pos-green" : "neg-red", pnlSign = pos.unrealized_pnl >= 0 ? "+" : "";
       posDiv.innerHTML = "<div style='display:flex; justify-content:space-between; margin-bottom:8px;'><span>" + pos.symbol + " (" + pos.side + " " + pos.leverage + "x)</span><span class='" + pnlClass + "'>" + pnlSign + pos.unrealized_pnl + " $</span></div><div class='grid-2'><div class='box'>Entry: " + pos.entry_price + "</div><div class='box'>Margin: " + pos.margin + " $</div><div class='box'>TP: " + pos.tp + "</div><div class='box'>SL: " + pos.sl + "</div></div>";
-    } else {
-      posDiv.innerHTML = "No open position.";
-    }
-    if (all.trade_history) {
-      globalTrades = Object.values(all.trade_history).reverse();
-      document.getElementById("trades-body").innerHTML = globalTrades.map(t => {
-        const w = t.pnl >= 0;
-        return "<tr><td>" + t.time + "</td><td>" + (t.symbol || "BTC") + "</td><td>" + t.side + "</td><td>" + t.invested + "</td><td class='" + (w ? "pos-green" : "neg-red") + "'>" + (w ? "+" : "") + t.pnl + "</td><td style='color:#fbbf24;'>" + (t.vault_saved || 0) + "</td><td><b>" + t.balance_after + "</b></td></tr>";
-      }).join("");
-    }
-    if (all.missed_signals) {
-      const mList = Object.values(all.missed_signals).reverse();
-      document.getElementById("missed-body").innerHTML = mList.map(m => {
-        let b = m.outcome === "SUCCESS" ? "<span class='pos-green'>WIN</span>" : (m.outcome === "FAILED" ? "<span class='neg-red'>LOSS</span>" : "PENDING");
-        return "<tr><td>" + m.time + "</td><td>" + m.symbol + "</td><td>" + m.side + "</td><td style='direction:ltr;'>" + m.entry + "/" + m.sl + "/" + m.tp + "</td><td>" + b + "</td></tr>";
-      }).join("");
-    }
+    } else { posDiv.innerHTML = "در حال حاضر معامله بازی وجود ندارد."; }
+    if (all.trade_history) { globalTrades = Object.values(all.trade_history).reverse(); document.getElementById("trades-body").innerHTML = globalTrades.map(t => { const w = t.pnl >= 0; return "<tr><td>" + t.time + "</td><td>" + (t.symbol || "BTC") + "</td><td>" + t.side + "</td><td>" + t.invested + "</td><td class='" + (w ? "pos-green" : "neg-red") + "'>" + (w ? "+" : "") + t.pnl + "</td><td style='color:#fbbf24;'>" + (t.vault_saved || 0) + "</td><td><b>" + t.balance_after + "</b></td></tr>"; }).join(""); }
+    if (all.missed_signals) { const mList = Object.values(all.missed_signals).reverse(); document.getElementById("missed-body").innerHTML = mList.map(m => { let b = m.outcome === "SUCCESS" ? "<span class='pos-green'>موفق ✅</span>" : (m.outcome === "FAILED" ? "<span class='neg-red'>ناموفق ❌</span>" : "در انتظار ⏳"); return "<tr><td>" + m.time + "</td><td>" + m.symbol + "</td><td>" + m.side + "</td><td style='direction:ltr;'>" + m.entry + "/" + m.sl + "/" + m.tp + "</td><td>" + b + "</td></tr>"; }).join(""); }
     if (all.last_notif && all.last_notif.id && all.last_notif.id !== lastNotifId) {
-      lastNotifId = all.last_notif.id;
-      localStorage.setItem("lastNotifId", lastNotifId);
+      lastNotifId = all.last_notif.id; localStorage.setItem("lastNotifId", lastNotifId);
       playAlertBell(all.last_notif.title, all.last_notif.body);
     }
   }
 
   function exportExcel() {
-    if (!globalTrades.length) { alert("No trades to export."); return; }
+    if (!globalTrades.length) { alert("معامله‌ای برای خروجی اکسل وجود ندارد."); return; }
     let csv = "Time,Symbol,Side,Invested($),PnL($),VaultSaved($),Fee($),BalanceAfter($)\n";
-    globalTrades.forEach(t => {
-      csv += t.time + "," + (t.symbol || "BTC") + "," + t.side + "," + t.invested + "," + t.pnl + "," + (t.vault_saved || 0) + "," + t.fee + "," + t.balance_after + "\n";
-    });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
-    link.download = "Triple_Portfolio_Report.csv";
-    link.click();
+    globalTrades.forEach(t => { csv += t.time + "," + (t.symbol || "BTC") + "," + t.side + "," + t.invested + "," + t.pnl + "," + (t.vault_saved || 0) + "," + t.fee + "," + t.balance_after + "\n"; });
+    const link = document.createElement("a"); link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" })); link.download = "Triple_Portfolio_Report.csv"; link.click();
+  }
+
+  async function testTelegram() {
+    const tk = document.getElementById("tg_token").value.trim(), cid = document.getElementById("tg_chat_id").value.trim();
+    if (!tk || !cid) { alert("لطفاً ابتدا Bot Token و Chat ID را وارد کنید."); return; }
+    const res = await fetch(GSHEET_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ action: "test_telegram", tg_token: tk, tg_chat_id: cid }) });
+    const out = await res.json();
+    if (out.ok) alert("پیام تست با موفقیت به تلگرام ارسال شد! ✅");
+    else alert("خطای تلگرام: " + (out.description || "توکن یا Chat ID را بررسی کنید"));
+  }
+
+  async function simulateSignal() {
+    const btcP = (lastMarketData && lastMarketData.current_price) ? lastMarketData.current_price : 95000;
+    const nowStr = new Date().toISOString().slice(0, 16).replace("T", " ");
+    const msg = "🧪 سیگنال آزمایشی (تست سیستم)\nنماد: BTC/USDT (LONG | اهرم 5x)\nسرمایه پیشنهادی: 100 $\nورود: " + btcP + " | TP: " + (btcP * 1.02).toFixed(2) + " | SL: " + (btcP * 0.99).toFixed(2);
+    const simData = {
+      tg_enabled: document.getElementById("tg_enabled").value === "true",
+      tg_token: document.getElementById("tg_token").value.trim(),
+      tg_chat_id: document.getElementById("tg_chat_id").value.trim(),
+      missed: { time: nowStr, symbol: "BTC/USDT (تست)", side: "LONG", entry: btcP, sl: (btcP * 0.99).toFixed(2), tp: (btcP * 1.02).toFixed(2), outcome: "PENDING" },
+      notif: { id: String(Date.now()), title: "تست شبیه‌سازی سیگنال", body: msg }
+    };
+    await fetch(GSHEET_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ action: "simulate_signal", sim_data: simData }) });
+    syncAll();
+    alert("سیگنال آزمایشی ساخته شد! زنگ داشبورد، پیام تلگرام و تب اعلان‌های از دست رفته را بررسی کنید.");
   }
 
   async function save() {
     enforceAllRules();
-    const data = {
-      symbol: document.getElementById("symbol").value,
-      timeframe: document.getElementById("timeframe").value,
-      btc_multi_lev: Number(document.getElementById("btc_multi_lev").value),
-      leverage: Number(document.getElementById("leverage").value),
-      ema_period: Number(document.getElementById("ema_period").value),
-      rsi_period: Number(document.getElementById("rsi_period").value),
-      alloc_mode: document.getElementById("alloc_mode").value,
-      alloc_value: Number(document.getElementById("alloc_value").value),
-      vault_enabled: document.getElementById("vault_enabled").value === "true",
-      base_capital: Number(document.getElementById("base_capital").value),
-      vault_percent: Number(document.getElementById("vault_percent").value),
-      risk_percent: Number(document.getElementById("risk").value),
-      auto_trade: document.getElementById("auto").value === "true",
-      sound_enabled: document.getElementById("sound_enabled").value === "true",
-      missed_alert: document.getElementById("missed_alert").value === "true",
-      tg_enabled: document.getElementById("tg_enabled").value === "true",
-      tg_token: document.getElementById("tg_token").value.trim(),
-      tg_chat_id: document.getElementById("tg_chat_id").value.trim(),
-      api_key: document.getElementById("api_key").value.trim(),
-      api_secret: document.getElementById("api_secret").value.trim()
-    };
-
-    const res = await fetch(GSHEET_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify({ action: "save_settings", data: data })
-    });
-    const result = await res.json();
-
-    if (data.sound_enabled) {
-      requestNotifPerm();
-      playAlertBell("تایید تنظیمات", "تنظیمات ذخیره شد.");
-    }
-
-    if (data.tg_enabled) {
-      if (result.ok) {
-        alert("تنظیمات ذخیره شد و پیام تست با موفقیت به تلگرام ارسال شد! ✅");
-      } else {
-        alert("تنظیمات ذخیره شد اما خطای تلگرام: " + (result.description || "توکن یا Chat ID را بررسی کنید"));
-      }
-    } else {
-      alert("Settings Saved Successfully!");
-    }
+    const data = { symbol: document.getElementById("symbol").value, timeframe: document.getElementById("timeframe").value, btc_multi_lev: Number(document.getElementById("btc_multi_lev").value), leverage: Number(document.getElementById("leverage").value), ema_period: Number(document.getElementById("ema_period").value), rsi_period: Number(document.getElementById("rsi_period").value), alloc_mode: document.getElementById("alloc_mode").value, alloc_value: Number(document.getElementById("alloc_value").value), vault_enabled: document.getElementById("vault_enabled").value === "true", base_capital: Number(document.getElementById("base_capital").value), vault_percent: Number(document.getElementById("vault_percent").value), risk_percent: Number(document.getElementById("risk").value), auto_trade: document.getElementById("auto").value === "true", sound_enabled: document.getElementById("sound_enabled").value === "true", missed_alert: document.getElementById("missed_alert").value === "true", tg_enabled: document.getElementById("tg_enabled").value === "true", tg_token: document.getElementById("tg_token").value.trim(), tg_chat_id: document.getElementById("tg_chat_id").value.trim(), api_key: document.getElementById("api_key").value.trim(), api_secret: document.getElementById("api_secret").value.trim() };
+    await fetch(GSHEET_URL, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify({ action: "save_settings", data: data }) });
+    alert("تنظیمات با موفقیت ذخیره شد! ✅");
   }
 
   async function syncAll() {
     try {
-      const res = await fetch(GSHEET_URL);
-      const all = await res.json();
-      if (!all) return;
+      const res = await fetch(GSHEET_URL); const all = await res.json(); if (!all) return;
       const wBal = all.live_market ? all.live_market.wallet_balance : 0;
-      applySettings(all.settings, wBal);
-      updateExtraTabs(all);
-      updateMarket(all.live_market);
+      applySettings(all.settings, wBal); updateExtraTabs(all); updateMarket(all.live_market);
     } catch (e) {}
   }
 
-  enforceAllRules();
-  syncAll();
-  setInterval(syncAll, 5000);
+  setupChartGestures(); enforceAllRules(); syncAll(); setInterval(syncAll, 5000);
 </script>
 </body>
 </html>
